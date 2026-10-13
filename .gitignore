@@ -1,0 +1,382 @@
+# ============================================================
+# .gitignore — raccolta per linguaggi e framework
+# Puoi mantenere tutte le sezioni oppure rimuovere quelle
+# non pertinenti al progetto. Le regole duplicate sono innocue.
+# ============================================================
+
+
+# ------------------------------------------------------------
+# GO
+# ------------------------------------------------------------
+# Binari compilati
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+coverage.out
+coverage.html
+# Directory di build comuni
+/bin/
+/build/
+# Dipendenze vendorizzate: abilita questa regola solo se non
+# vuoi versionare il codice presente in vendor/
+/vendor/
+
+
+# ------------------------------------------------------------
+# WAILS
+# ------------------------------------------------------------
+# Output e artefatti Wails
+/wailsjs/
+# Se il progetto genera questi percorsi, ignorali
+/frontend/dist/
+/frontend/build/
+*.app
+*.dmg
+*.msi
+*.deb
+*.rpm
+# File temporanei e log
+*.log
+
+
+# ------------------------------------------------------------
+# PYTHON
+# ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+# Ambienti virtuali
+.venv/
+venv/
+env/
+ENV/
+.virtualenv/
+# Test, coverage e type checking
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+# Notebook
+.ipynb_checkpoints/
+# Configurazioni locali e segreti
+.env
+.env.*
+!.env.example
+!.env.sample
+# Packaging
+pip-wheel-metadata/
+poetry.toml
+# Jupyter
+.jupyter/
+
+
+# ------------------------------------------------------------
+# VITE
+# ------------------------------------------------------------
+# Output di build
+dist/
+# Cache e file temporanei Vite
+node_modules/.vite/
+.vite/
+# Variabili d'ambiente locali (mantieni i template)
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+# Report di test / coverage
+coverage/
+
+# ------------------------------------------------------------
+# REACT
+# ------------------------------------------------------------
+# Build (CRA, Vite e altri tool)
+build/
+dist/
+# File di test e coverage
+coverage/
+# React Native / Expo, se usati
+.expo/
+.expo-shared/
+web-build/
+# File locali
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+
+# ------------------------------------------------------------
+# NODE.JS
+# ------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+# Log e report
+logs/
+*.log
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+# Cache e output
+.npm/
+.eslintcache
+.stylelintcache
+.parcel-cache/
+.turbo/
+.nx/
+.cache/
+.temp/
+.tmp/
+# Package manager: non ignorare i lockfile, normalmente vanno versionati
+
+
+# ------------------------------------------------------------
+# EXPRESS
+# ------------------------------------------------------------
+# File locali/segreti per server Express
+.env
+.env.*
+!.env.example
+!.env.sample
+# Log e file runtime
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+# Upload e dati generati (adatta ai percorsi reali)
+uploads/
+tmp/
+temp/
+
+
+# ------------------------------------------------------------
+# VUE
+# ------------------------------------------------------------
+# Vue CLI / Vite
+/dist/
+/.vue/
+# Cache
+node_modules/
+.npm/
+.eslintcache
+# Variabili d'ambiente locali
+.env.local
+.env.*.local
+# Test e coverage
+coverage/
+
+
+# ------------------------------------------------------------
+# SVELTE / SVELTEKIT
+# ------------------------------------------------------------
+.svelte-kit/
+build/
+# SvelteKit output
+.vercel/
+.netlify/
+.output/
+# Cache e dipendenze
+node_modules/
+# Variabili locali
+.env
+.env.*
+!.env.example
+!.env.sample
+# Coverage
+coverage/
+
+
+# ------------------------------------------------------------
+# HTML
+# ------------------------------------------------------------
+# File generati o temporanei dell'editor
+*.html~
+*.htm~
+# Output di generatori statici (adatta al progetto)
+_site/
+public/generated/
+
+
+# ------------------------------------------------------------
+# CSS
+# ------------------------------------------------------------
+# Source maps CSS generate
+*.css.map
+# File temporanei
+*.css~
+*.scss~
+*.sass~
+*.less~
+
+
+# ------------------------------------------------------------
+# TAILWIND CSS
+# ------------------------------------------------------------
+# Output CSS compilato (adatta il percorso al progetto)
+dist/
+build/
+# Cache dei tool
+.parcel-cache/
+.turbo/
+# Nota: non ignorare i file di configurazione Tailwind/PostCSS
+# né i CSS sorgente che devono essere versionati.
+
+
+# ------------------------------------------------------------
+# POWERSHELL
+# ------------------------------------------------------------
+# File temporanei e di backup
+*.ps1~
+*.psm1~
+*.psd1~
+# Cronologia/sessioni locali
+ConsoleHost_history.txt
+# Output di profiling/debug
+*.trace
+*.etl
+# File di configurazione locali con dati sensibili (usa nomi
+# specifici per evitare di ignorare script condivisi)
+local.settings.json
+
+
+# ------------------------------------------------------------
+# BASH
+# ------------------------------------------------------------
+# Cronologia e sessioni locali
+.bash_history
+.bash_sessions/
+# File temporanei/editor
+*.swp
+*.swo
+*~
+# Output di debug
+*.trace
+
+
+# ------------------------------------------------------------
+# JAVASCRIPT
+# ------------------------------------------------------------
+# Dipendenze e build
+node_modules/
+dist/
+build/
+coverage/
+# Cache
+.nyc_output/
+.eslintcache
+.stylelintcache
+.parcel-cache/
+# Debug e log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+# File di ambiente
+.env
+.env.*
+!.env.example
+!.env.sample
+
+
+# ------------------------------------------------------------
+# TYPESCRIPT
+# ------------------------------------------------------------
+# Output compilato e dichiarazioni generate (se non versionate)
+*.tsbuildinfo
+# Build e coverage
+dist/
+build/
+coverage/
+# Cache
+.nyc_output/
+# Nota: non ignorare automaticamente *.d.ts: alcune dichiarazioni
+# fanno parte dell'API pubblica e vanno versionate.
+
+
+# ------------------------------------------------------------
+# SHELL (sh, zsh, fish e script generici)
+# ------------------------------------------------------------
+# File temporanei e backup
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+*.temp
+# Log e output diagnostici
+*.log
+*.trace
+# Cronologie locali
+.zsh_history
+.fish_history
+# File di ambiente/segreti
+.env
+.env.*
+!.env.example
+!.env.sample
+
+
+# ------------------------------------------------------------
+# EDITOR / IDE (comuni a tutti i progetti)
+# ------------------------------------------------------------
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+desktop.ini
+*.orig
+*.rej
+*.swn
+
+
+# ------------------------------------------------------------
+# SEGRETI E CONFIGURAZIONI LOCALI (comuni)
+# ------------------------------------------------------------
+# Mantieni nel repository template senza segreti, ad esempio
+# .env.example. Non committare chiavi, token o credenziali.
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.claude
+claude
+implementat*

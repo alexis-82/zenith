@@ -1,0 +1,208 @@
+:root,
+:root[data-theme='light'] {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #eef0f3;
+  --column: #ebedf0;
+  --card: #ffffff;
+  --input: #ffffff;
+  --input-border: #d9dde3;
+  --sidebar-item: #eef0f3;
+  --soft-button: transparent;
+  --border: #d9dde3;
+  --text: #1d2228;
+  --text-muted: #66707c;
+  --accent: #3b6ef5;
+  --accent-text: #ffffff;
+  --danger: #d13b3b;
+  --warning-bg: #fff4d6;
+  --warning-text: #6b4e00;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.08), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --overlay: rgba(15, 20, 30, 0.45);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #15181d;
+  --surface: #1f2329;
+  --surface-2: #272c33;
+  --column: #2a2f37;
+  --card: #363c46;
+  --input: #2c323a;
+  --input-border: #4a525e;
+  --sidebar-item: #363c46;
+  --soft-button: #2c323a;
+  --border: #323840;
+  --text: #e6e9ed;
+  --text-muted: #98a1ad;
+  --accent: #6b93ff;
+  --accent-text: #0d1117;
+  --danger: #ff6b6b;
+  --warning-bg: #3a3014;
+  --warning-text: #f3d98b;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --overlay: rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+#app {
+  height: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+
+button:hover {
+  background: var(--surface-2);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+button.primary:hover {
+  filter: brightness(1.08);
+}
+
+button.danger {
+  color: var(--danger);
+}
+
+button.icon {
+  border: none;
+  background: transparent;
+  padding: 2px 6px;
+  color: var(--text-muted);
+}
+
+button.icon:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: var(--text);
+  background: var(--input);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.error-text {
+  color: var(--danger);
+}
+
+/* Rendered markdown */
+.markdown {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.markdown :first-child {
+  margin-top: 0;
+}
+
+.markdown :last-child {
+  margin-bottom: 0;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  margin: 0.8em 0 0.4em;
+  line-height: 1.25;
+}
+
+.markdown h1 {
+  font-size: 1.4em;
+}
+
+.markdown h2 {
+  font-size: 1.2em;
+}
+
+.markdown h3 {
+  font-size: 1.05em;
+}
+
+.markdown code {
+  font-family: ui-monospace, Consolas, monospace;
+  background: var(--surface-2);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+.markdown pre {
+  background: var(--surface-2);
+  padding: 8px 10px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.markdown pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown blockquote {
+  margin: 0.5em 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--border);
+  color: var(--text-muted);
+}
+
+.markdown a {
+  color: var(--accent);
+}
+
+.markdown table {
+  border-collapse: collapse;
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+}
