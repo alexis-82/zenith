@@ -36,6 +36,12 @@ Su un computer nuovo, se Nextcloud non ha ancora scaricato il file, Zenith segna
 
 Requisiti: Go ≥ 1.25, Node ≥ 20, [Wails CLI v2](https://wails.io/docs/gettingstarted/installation).
 
+Dopo un clone, prima di usare `go build` / `go test`, compila una volta il frontend: `main.go` incorpora `frontend/dist` (non versionata) e Go non compila se la cartella non esiste. `wails build` e `wails dev` lo fanno da soli.
+
+```sh
+npm --prefix frontend install && npm --prefix frontend run build
+```
+
 ```sh
 wails dev                    # avvio in sviluppo
 go test ./...                # test backend

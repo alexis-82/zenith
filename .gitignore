@@ -380,3 +380,15 @@ desktop.ini
 .claude
 claude
 implementat*
+
+
+# ------------------------------------------------------------
+# ZENITH — eccezioni alle regole generiche qui sopra
+# (le regole successive prevalgono su quelle precedenti)
+# ------------------------------------------------------------
+# Codice sorgente del frontend: la regola Python "lib/" lo escluderebbe
+!frontend/src/lib/
+# Risorse Wails (icone, manifest, Info.plist, installer): vanno versionate;
+# si esclude solo l'output compilato
+!build/
+build/bin/
