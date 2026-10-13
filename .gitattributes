@@ -1,0 +1,7 @@
+# Linux scripts and desktop entries must keep LF line endings even when the
+# repository is checked out on Windows (core.autocrlf=true), otherwise
+# "/bin/sh^M: bad interpreter".
+*.sh      text eol=lf
+*.desktop text eol=lf
+*.png     binary
+*.ico     binary

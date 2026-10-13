@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Zenith
+Comment=Personal kanban board for projects and tasks
+Comment[it]=Kanban board personale per progetti e task
+Exec=/usr/local/bin/zenith-launch.sh
+Icon=zenith
+Terminal=false
+Categories=Office;ProjectManagement;
+StartupWMClass=zenith

@@ -54,3 +54,30 @@ La build va eseguita su ciascun sistema operativo:
 - **Windows**: richiede WebView2 (preinstallato su Windows 10/11 aggiornati).
 - **macOS**: `wails build` (Xcode command line tools).
 - **Linux**: servono `gcc`, `libgtk-3-dev` e `libwebkit2gtk-4.0-dev` (o `libwebkit2gtk-4.1-dev` con `wails build -tags webkit2_41`).
+
+### Linux: installazione nel menu e collegamento sul desktop
+
+Dalla root del progetto, dopo la build:
+
+```sh
+wails build -tags webkit2_41          # Ubuntu 24.04+, Debian 13, Fedora 40+ (webkit2gtk 4.1)
+sudo sh build/linux/install.sh
+```
+
+L'installer copia:
+
+- `build/bin/zenith` in `/usr/local/bin/zenith`;
+- il launcher `build/linux/zenith-launch.sh` in `/usr/local/bin/`;
+- la voce di menu `zenith.desktop` in `/usr/share/applications/`;
+- l'icona in `/usr/share/pixmaps/zenith.png`;
+- un collegamento `zenith.desktop` sul Desktop dell'utente che ha lanciato `sudo`, segnato come attendibile (GNOME non avvia i collegamenti non attendibili).
+
+Per aggiornare basta rifare build e install. Per disinstallare (il file dati JSON e `~/.config/Zenith` restano intatti):
+
+```sh
+sudo sh build/linux/install.sh --uninstall
+```
+
+Il launcher imposta `WEBKIT_DISABLE_DMABUF_RENDERER=1`, che evita la finestra bianca di WebKitGTK con alcuni driver (NVIDIA, alcune sessioni Wayland). Per non usarlo: `WEBKIT_DISABLE_DMABUF_RENDERER=0 zenith-launch.sh`.
+
+Se il collegamento sul desktop non si avvia, sceglierlo con il tasto destro e selezionare **Consenti avvio** (GNOME) oppure renderlo eseguibile dal file manager.
