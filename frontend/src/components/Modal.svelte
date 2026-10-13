@@ -1,5 +1,15 @@
+<script lang="ts" module>
+  // Open modals, oldest first: only the topmost one reacts to Escape
+  // (every modal listens on window, so stopPropagation is not enough).
+  const stack: object[] = []
+</script>
+
 <script lang="ts">
-  import type { Snippet } from 'svelte'
+  import { onDestroy, type Snippet } from 'svelte'
+
+  const id = {}
+  stack.push(id)
+  onDestroy(() => stack.splice(stack.indexOf(id), 1))
 
   let {
     title,
@@ -16,10 +26,7 @@
   } = $props()
 
   function onkeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape' && onclose) {
-      e.stopPropagation()
-      onclose()
-    }
+    if (e.key === 'Escape' && onclose && stack.at(-1) === id) onclose()
   }
 </script>
 

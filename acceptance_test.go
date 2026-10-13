@@ -441,3 +441,18 @@ func TestAcceptance_SameFileFromTwoComputers(t *testing.T) {
 		t.Fatalf("second computer sees different data: %+v", s.Board)
 	}
 }
+
+func TestAcceptance_RelativePathRejected(t *testing.T) {
+	a := startApp(t, t.TempDir())
+	for _, p := range []string{"zenith.json", `Nextcloud\zenith.json`, "./zenith.json"} {
+		if _, err := a.SetDataPath(p, true); err == nil || !strings.Contains(err.Error(), "percorso completo") {
+			t.Fatalf("SetDataPath(%q): expected relative path error, got %v", p, err)
+		}
+		if _, err := a.CreateNewFile(p); err == nil || !strings.Contains(err.Error(), "percorso completo") {
+			t.Fatalf("CreateNewFile(%q): expected relative path error, got %v", p, err)
+		}
+	}
+	if _, err := os.Stat("zenith.json"); err == nil {
+		t.Fatal("file created in the working directory")
+	}
+}

@@ -215,6 +215,24 @@ describe('task', () => {
     expect(lastSent().projects[0].tasks.map((t) => t.id)).toEqual(['t_2'])
   })
 
+  it('Esc sulla conferma chiude solo la conferma, non il modale del task', async () => {
+    await start()
+    await userEvent.click(screen.getByRole('button', { name: /Primo/ }))
+    const title = within(screen.getByRole('dialog', { name: 'Modifica task' })).getAllByRole('textbox')[0]
+    await userEvent.type(title, ' modificato')
+    await userEvent.click(within(screen.getByRole('dialog', { name: 'Modifica task' })).getByRole('button', { name: 'Elimina' }))
+    expect(screen.getByRole('dialog', { name: 'Elimina task' })).toBeTruthy()
+
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog', { name: 'Elimina task' })).toBeNull()
+    const still = screen.getByRole('dialog', { name: 'Modifica task' })
+    expect((within(still).getAllByRole('textbox')[0] as HTMLInputElement).value).toBe('Primo modificato')
+
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(api.UpdateBoard).not.toHaveBeenCalled()
+  })
+
   it('anteprima Markdown sicura: formatta, non esegue HTML, apre solo link sicuri', async () => {
     const board = sampleBoard()
     board.projects[0].tasks[0].description =
@@ -364,6 +382,40 @@ describe('salvataggio, modifiche esterne, uscita', () => {
     emit('save:status', { status: 'paused', error: '' })
     await screen.findByText('In pausa: conflitto')
     expect(save().disabled).toBe(true)
+  })
+
+  it('Salva dopo un UpdateBoard rifiutato rimanda la board mostrata a schermo', async () => {
+    await start()
+    api.UpdateBoard.mockRejectedValueOnce('ERR_INVALID: board non valida')
+    await fireEvent.click(screen.getAllByLabelText('Elimina progetto')[1])
+    await userEvent.click(screen.getByRole('button', { name: 'Elimina' }))
+    const save = await screen.findByRole('button', { name: 'Salva' })
+    await waitFor(() => expect((save as HTMLButtonElement).disabled).toBe(false))
+
+    await userEvent.click(save)
+    expect(api.UpdateBoard).toHaveBeenCalledTimes(2)
+    expect(lastSent().projects.map((p) => p.id)).toEqual(['p_1'])
+    expect(api.UpdateBoard.mock.calls[1][0]).toBeGreaterThan(api.UpdateBoard.mock.calls[0][0])
+    expect(api.SaveNow).toHaveBeenCalledTimes(1)
+
+    // next manual save: nothing to resend
+    emit('save:status', { status: 'error', error: 'x' })
+    await userEvent.click(await screen.findByRole('button', { name: 'Salva' }))
+    expect(api.UpdateBoard).toHaveBeenCalledTimes(2)
+  })
+
+  it('salvare un task eliminato da un altro dispositivo mostra un errore e non chiude il modale', async () => {
+    await start()
+    await userEvent.click(screen.getByRole('button', { name: /Primo/ }))
+    const without = sampleBoard()
+    without.projects[0].tasks = without.projects[0].tasks.filter((t) => t.id !== 't_1')
+    app.setBoard(without)
+
+    const dialog = await screen.findByRole('dialog', { name: 'Modifica task' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Salva' }))
+    expect(await within(dialog).findByText(/non esiste più/)).toBeTruthy()
+    expect(screen.getByRole('dialog', { name: 'Modifica task' })).toBeTruthy()
+    expect(api.UpdateBoard).not.toHaveBeenCalled()
   })
 
   it('modifica esterna senza modifiche pendenti: banner e Ricarica', async () => {
