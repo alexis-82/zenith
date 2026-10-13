@@ -1,3 +1,5 @@
+![logo](https://i.ibb.co/WpPfMf2p/zenith-logo-dark.png)
+
 # Zenith
 
 Kanban board personale e minimale (Go + Wails + Svelte). Tutti i progetti e i task stanno in **un unico file JSON**, pensato per essere tenuto in una cartella sincronizzata (es. Nextcloud) e aperto da più computer.
