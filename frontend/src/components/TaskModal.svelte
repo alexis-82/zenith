@@ -56,6 +56,56 @@
   function focus(node: HTMLElement) {
     node.focus()
   }
+
+  // Images are embedded as data URLs: the data file is shared between
+  // computers, so a local file path would not work elsewhere.
+  const MAX_IMAGE_BYTES = 2 * 1024 * 1024
+  let textarea = $state<HTMLTextAreaElement>()
+  let imageInput = $state<HTMLInputElement>()
+
+  function onImageSelected(e: Event) {
+    const input = e.currentTarget as HTMLInputElement
+    const file = input.files?.[0]
+    input.value = '' // allow picking the same file again
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      error = 'Il file scelto non è un\'immagine'
+      return
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      error = 'Immagine troppo grande (massimo 2 MB)'
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => insertImage(file.name, reader.result as string)
+    reader.onerror = () => (error = 'Impossibile leggere l\'immagine')
+    reader.readAsDataURL(file)
+  }
+
+  // Inserts a reference-style image at the cursor (![name][img-N]) and puts
+  // the long data URL in a definition at the end, keeping the text readable.
+  function insertImage(fileName: string, dataUrl: string) {
+    let n = 1
+    while (description.includes(`[img-${n}]:`)) n++
+    const ref = `img-${n}`
+    const alt = fileName.replace(/\.[^.]+$/, '').replace(/[[\]]/g, '')
+    const tag = `![${alt}][${ref}]`
+
+    let pos = textarea?.selectionStart ?? description.length
+    let insert = tag
+    const defsStart = description.search(/\n\[img-\d+\]: data:/)
+    if (defsStart >= 0 && pos > defsStart) {
+      // Never inside the definitions: put the image on a new line at the end
+      // of the text, keeping the blank line a definition needs before it.
+      pos = defsStart
+      while (pos > 0 && /\s/.test(description[pos - 1])) pos--
+      insert = '\n' + tag
+    }
+
+    const text = description.slice(0, pos) + insert + description.slice(pos)
+    description = text.replace(/\s+$/, '') + `\n\n[${ref}]: ${dataUrl}\n`
+    error = ''
+  }
 </script>
 
 <Modal title={task ? 'Modifica task' : 'Nuovo task'} width="640px" {onclose}>
@@ -67,6 +117,16 @@
 
     <div class="desc-header">
       <span class="muted">Descrizione (Markdown)</span>
+      {#if mode === 'edit'}
+        <button type="button" class="add-image" onclick={() => imageInput?.click()}>🖼 Aggiungi immagine</button>
+        <input
+          bind:this={imageInput}
+          type="file"
+          accept="image/png,image/jpeg,image/gif,image/webp"
+          hidden
+          onchange={onImageSelected}
+        />
+      {/if}
       <div class="tabs">
         <button type="button" class:on={mode === 'edit'} onclick={() => (mode = 'edit')}>Modifica</button>
         <button type="button" class:on={mode === 'preview'} onclick={() => (mode = 'preview')}>Anteprima</button>
@@ -74,7 +134,7 @@
     </div>
 
     {#if mode === 'edit'}
-      <textarea bind:value={description} rows="12" placeholder="Testo, **grassetto**, - elenchi, [link](https://…)"></textarea>
+      <textarea bind:this={textarea} bind:value={description} rows="12" placeholder="Testo, **grassetto**, - elenchi, [link](https://…)"></textarea>
     {:else}
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
       <div class="preview markdown" onclick={onPreviewClick}>
@@ -155,6 +215,18 @@
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 10px 12px;
+  }
+
+  .add-image {
+    margin-left: auto;
+    margin-right: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .preview :global(img) {
+    max-width: 100%;
+    height: auto;
   }
 
   .delete {
