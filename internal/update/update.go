@@ -162,7 +162,7 @@ func PickAsset(assets []Asset, goos, goarch string) (Asset, error) {
 		name := strings.ToLower(a.Name)
 		switch goos {
 		case "windows":
-			if strings.HasSuffix(name, "-setup.exe") {
+			if strings.HasSuffix(name, "-installer.exe") {
 				return a, nil
 			}
 		case "linux":
