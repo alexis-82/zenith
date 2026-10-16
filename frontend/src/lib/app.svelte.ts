@@ -1,7 +1,7 @@
 // Global app state (Svelte 5 runes) and wrappers around the Go bindings.
 import * as api from '../../wailsjs/go/main/App'
 import { EventsOn } from '../../wailsjs/runtime/runtime'
-import type { Board, InitState, SaveStatus, Settings } from './types'
+import type { Board, InitState, SaveStatus, Settings, UpdateInfo } from './types'
 
 /** Splits a Go error ("ERR_CODE: message") into code and message. */
 export function parseError(e: unknown): { code: string; message: string } {
@@ -12,7 +12,7 @@ export function parseError(e: unknown): { code: string; message: string } {
 
 class AppState {
   board = $state<Board | null>(null)
-  settings = $state<Settings>({ dataPath: '', autosaveSeconds: 2, theme: 'system' })
+  settings = $state<Settings>({ dataPath: '', autosaveSeconds: 2, theme: 'system', checkUpdates: true })
   loadError = $state('')
   selectedProjectId = $state<string | null>(null)
   view = $state<'board' | 'settings'>('board')
@@ -21,6 +21,11 @@ class AppState {
   /** External change of the data file; conflict=true when local changes are pending. */
   externalChange = $state<{ conflict: boolean } | null>(null)
   closeBlocked = $state<{ reason: 'conflict' | 'error'; error: string } | null>(null)
+  /** Installed version ("dev" for development builds). */
+  version = $state('')
+  /** Update offered to the user (shown by UpdateDialog). */
+  updateOffer = $state<UpdateInfo | null>(null)
+  updateProgress = $state<{ done: number; total: number } | null>(null)
 
   // Monotonic for the whole session: the backend drops stale UpdateBoard calls.
   #seq = 0
@@ -44,7 +49,22 @@ class AppState {
     EventsOn('app:close-blocked', (e: { reason: 'conflict' | 'error'; error: string }) => {
       this.closeBlocked = e
     })
+    EventsOn('update:progress', (e: { done: number; total: number }) => {
+      this.updateProgress = e
+    })
     this.applyState((await api.Init()) as unknown as InitState)
+    this.version = await api.GetVersion()
+    if (this.settings.checkUpdates && this.version !== 'dev') this.#checkUpdatesInBackground()
+  }
+
+  // Startup check: silent when offline, when there is no release or no update.
+  async #checkUpdatesInBackground() {
+    try {
+      const info = (await api.CheckUpdate()) as unknown as UpdateInfo
+      if (info.available) this.updateOffer = info
+    } catch {
+      // ignore: the manual check in Settings shows errors
+    }
   }
 
   /** Applies a state returned by Init / SetDataPath / CreateNewFile. */

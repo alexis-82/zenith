@@ -46,3 +46,17 @@ func TestCorruptFile(t *testing.T) {
 		t.Fatalf("expected defaults, got %+v", got)
 	}
 }
+
+func TestCheckUpdatesDefaultForOlderFiles(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"dataPath":"x","autosaveSeconds":3,"theme":"dark"}`), 0o644)
+	if s := Load(dir); !s.CheckUpdates {
+		t.Fatal("settings saved before the update feature must default to checking updates")
+	}
+	if err := Save(dir, Settings{AutosaveSeconds: 2, Theme: "system", CheckUpdates: false}); err != nil {
+		t.Fatal(err)
+	}
+	if Load(dir).CheckUpdates {
+		t.Fatal("disabled update check not persisted")
+	}
+}

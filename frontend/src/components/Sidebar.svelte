@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as api from '../../wailsjs/go/main/App'
   import { app } from '../lib/app.svelte'
   import { addProject, deleteProject, renameProject } from '../lib/board'
   import { dialogs } from '../lib/dialogs.svelte'
@@ -70,6 +71,8 @@
     <button class="settings-btn" class:active-btn={app.view === 'settings'} onclick={() => (app.view = app.view === 'settings' ? 'board' : 'settings')}>
       ⚙ Impostazioni
     </button>
+    <!-- Quit(false) saves pending changes first; if that fails the close-blocked dialog appears -->
+    <button class="quit-btn" onclick={() => api.Quit(false)}>⏻ Esci</button>
   </div>
 </aside>
 
@@ -174,5 +177,16 @@
   .settings-btn:hover,
   .active-btn {
     background: var(--sidebar-item);
+  }
+
+  .quit-btn {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+  }
+
+  .quit-btn:hover {
+    background: var(--danger);
+    filter: brightness(1.1);
   }
 </style>

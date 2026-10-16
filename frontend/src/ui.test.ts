@@ -29,6 +29,9 @@ const mocks = vi.hoisted(() => {
       PickNewFile: vi.fn(),
       OpenURL: vi.fn(),
       Quit: vi.fn(),
+      GetVersion: vi.fn(),
+      CheckUpdate: vi.fn(),
+      InstallUpdate: vi.fn(),
     },
   }
 })
@@ -44,15 +47,28 @@ vi.mock('../wailsjs/runtime/runtime', () => ({
 import App from './App.svelte'
 import { app } from './lib/app.svelte'
 import { dialogs } from './lib/dialogs.svelte'
-import type { Board, InitState, Settings } from './lib/types'
+import type { Board, InitState, Settings, UpdateInfo } from './lib/types'
 
 const api = mocks.api
 const emit = (name: string, data: any) => mocks.handlers[name](data)
+
+const noUpdate = (u: Partial<UpdateInfo> = {}): UpdateInfo => ({
+  current: 'v1.0.0',
+  latest: 'v1.0.0',
+  available: false,
+  canInstall: false,
+  noRelease: false,
+  notes: '',
+  ...u,
+})
+const newer = (u: Partial<UpdateInfo> = {}) =>
+  noUpdate({ latest: 'v1.1.0', available: true, canInstall: true, notes: '## Novità\n- [dettagli](https://example.com)', ...u })
 
 const settings = (s: Partial<Settings> = {}): Settings => ({
   dataPath: 'C:\\Nextcloud\\zenith.json',
   autosaveSeconds: 2,
   theme: 'system',
+  checkUpdates: true,
   ...s,
 })
 
@@ -95,6 +111,9 @@ beforeEach(() => {
   for (const f of Object.values(api)) f.mockReset()
   api.UpdateBoard.mockResolvedValue(undefined)
   api.SaveSettings.mockImplementation(async (s: Settings) => s)
+  api.GetVersion.mockResolvedValue('v1.0.0')
+  api.CheckUpdate.mockResolvedValue(noUpdate())
+  app.updateOffer = null
   app.view = 'board'
   app.closeBlocked = null
   app.selectedProjectId = null
@@ -469,5 +488,89 @@ describe('salvataggio, modifiche esterne, uscita', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Mantieni le mie e esci' }))
     await waitFor(() => expect(api.Quit).toHaveBeenCalledWith(false))
     expect(api.ResolveConflict).toHaveBeenCalledWith('keep')
+  })
+})
+
+describe('aggiornamenti', () => {
+  it("all'avvio propone l'aggiornamento se disponibile, con le note", async () => {
+    api.CheckUpdate.mockResolvedValue(newer())
+    await start()
+    const dialog = await screen.findByRole('dialog', { name: 'Aggiornamento disponibile' })
+    expect(within(dialog).getByText(/Zenith v1\.1\.0/)).toBeTruthy()
+    expect(dialog.querySelector('.notes h2')).toBeTruthy()
+    await fireEvent.click(within(dialog).getByText('dettagli'))
+    expect(api.OpenURL).toHaveBeenCalledWith('https://example.com')
+
+    await userEvent.click(within(dialog).getByRole('button', { name: /pi. tardi/i }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(api.InstallUpdate).not.toHaveBeenCalled()
+  })
+
+  it("non controlla all'avvio se disattivato o in versione di sviluppo", async () => {
+    await start({ settings: settings({ checkUpdates: false }) })
+    expect(api.CheckUpdate).not.toHaveBeenCalled()
+  })
+
+  it('versione dev: nessun controllo automatico', async () => {
+    api.GetVersion.mockResolvedValue('dev')
+    await start()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(api.CheckUpdate).not.toHaveBeenCalled()
+  })
+
+  it("offline all'avvio: nessun messaggio", async () => {
+    api.CheckUpdate.mockRejectedValue('impossibile contattare GitHub')
+    await start()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('Scarica e installa: progresso, errore visibile e possibilit\u00e0 di riprovare', async () => {
+    api.CheckUpdate.mockResolvedValue(newer())
+    let reject!: (e: unknown) => void
+    api.InstallUpdate.mockImplementationOnce(() => new Promise((_, r) => (reject = r)))
+    await start()
+    const dialog = await screen.findByRole('dialog', { name: 'Aggiornamento disponibile' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Scarica e installa' }))
+    emit('update:progress', { done: 50, total: 200 })
+    expect(await within(dialog).findByText(/Download in corso.*25%/)).toBeTruthy()
+    expect((within(dialog).getByRole('button', { name: 'Scarica e installa' }) as HTMLButtonElement).disabled).toBe(true)
+
+    reject('checksum SHA-256 non corrisponde')
+    expect(await within(dialog).findByText(/SHA-256/)).toBeTruthy()
+    expect((within(dialog).getByRole('button', { name: 'Scarica e installa' }) as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('release senza file per questo sistema: niente pulsante di installazione', async () => {
+    api.CheckUpdate.mockResolvedValue(newer({ canInstall: false }))
+    await start()
+    const dialog = await screen.findByRole('dialog', { name: 'Aggiornamento disponibile' })
+    expect(within(dialog).queryByRole('button', { name: 'Scarica e installa' })).toBeNull()
+  })
+
+  it('Impostazioni: controllo manuale e casella', async () => {
+    await start({ settings: settings({ checkUpdates: false }) })
+    const btn = screen.getAllByRole('button', { name: /Impostazioni/ }).find((b) => !b.textContent!.includes('Apri'))!
+    await userEvent.click(btn)
+    expect(screen.getByText('Versione installata: v1.0.0')).toBeTruthy()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Controlla aggiornamenti' }))
+    expect(await screen.findByText(/aggiornato \(v1\.0\.0\)/)).toBeTruthy()
+
+    api.CheckUpdate.mockResolvedValueOnce(noUpdate({ noRelease: true, latest: '' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Controlla aggiornamenti' }))
+    expect(await screen.findByText('Nessuna release pubblicata su GitHub.')).toBeTruthy()
+
+    api.CheckUpdate.mockRejectedValueOnce('impossibile contattare GitHub')
+    await userEvent.click(screen.getByRole('button', { name: 'Controlla aggiornamenti' }))
+    expect(await screen.findByText(/impossibile contattare GitHub/)).toBeTruthy()
+
+    api.CheckUpdate.mockResolvedValueOnce(newer())
+    await userEvent.click(screen.getByRole('button', { name: 'Controlla aggiornamenti' }))
+    expect(await screen.findByRole('dialog', { name: 'Aggiornamento disponibile' })).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: /pi. tardi/i }))
+
+    await userEvent.click(screen.getByLabelText(/Controlla gli aggiornamenti/))
+    expect(api.SaveSettings).toHaveBeenLastCalledWith(expect.objectContaining({ checkUpdates: true }))
   })
 })

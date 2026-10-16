@@ -17,6 +17,7 @@ import (
 	"zenith/internal/model"
 	"zenith/internal/persist"
 	"zenith/internal/store"
+	ghupdate "zenith/internal/update"
 )
 
 // InitState is everything the frontend needs to render after startup or
@@ -39,10 +40,14 @@ type App struct {
 	allowQuit atomic.Bool
 	// emitEvent is replaceable in tests (the Wails runtime needs a real app).
 	emitEvent func(ctx context.Context, name string, data ...interface{})
+	updates   updater
 }
 
 func NewApp() *App {
-	return &App{emitEvent: runtime.EventsEmit}
+	return &App{
+		emitEvent: runtime.EventsEmit,
+		updates:   updater{checker: ghupdate.NewChecker(version), install: installUpdate, quit: runtime.Quit},
+	}
 }
 
 func (a *App) emit(name string, data any) {

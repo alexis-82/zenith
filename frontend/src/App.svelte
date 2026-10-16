@@ -7,6 +7,7 @@
   import ExternalChange from './components/ExternalChange.svelte'
   import Settings from './components/Settings.svelte'
   import Sidebar from './components/Sidebar.svelte'
+  import UpdateDialog from './components/UpdateDialog.svelte'
   import { app } from './lib/app.svelte'
   import { applyTheme } from './lib/theme'
 
@@ -38,6 +39,7 @@
     </main>
   </div>
   <Dialogs />
+  <UpdateDialog />
   <CloseBlockedDialog />
 {/if}
 

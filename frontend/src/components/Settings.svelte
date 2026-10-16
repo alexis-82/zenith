@@ -3,7 +3,7 @@
   import { app, parseError } from '../lib/app.svelte'
   import { dialogs } from '../lib/dialogs.svelte'
   import { applyTheme } from '../lib/theme'
-  import type { InitState, Theme } from '../lib/types'
+  import type { InitState, Theme, UpdateInfo } from '../lib/types'
 
   let path = $state(app.settings.dataPath)
   let autosave = $state(app.settings.autosaveSeconds)
@@ -99,6 +99,35 @@
       error = parseError(e).message
     }
   }
+
+  let updateMessage = $state('')
+  let updateError = $state('')
+  let checking = $state(false)
+
+  async function setCheckUpdates(checkUpdates: boolean) {
+    try {
+      await app.saveSettings({ ...app.settings, checkUpdates })
+    } catch (e) {
+      updateError = parseError(e).message
+    }
+  }
+
+  async function checkUpdates() {
+    updateMessage = ''
+    updateError = ''
+    checking = true
+    try {
+      const u = (await api.CheckUpdate()) as unknown as UpdateInfo
+      if (u.noRelease) updateMessage = 'Nessuna release pubblicata su GitHub.'
+      else if (u.available) app.updateOffer = u
+      else if (u.current === 'dev') updateMessage = `Versione di sviluppo: l'ultima release è ${u.latest}.`
+      else updateMessage = `Zenith è aggiornato (${u.current}).`
+    } catch (e) {
+      updateError = parseError(e).message
+    } finally {
+      checking = false
+    }
+  }
 </script>
 
 <div class="settings">
@@ -156,6 +185,26 @@
         </label>
       {/each}
     </div>
+  </section>
+
+  <section>
+    <h2>Aggiornamenti</h2>
+    <p class="muted">Versione installata: {app.version}</p>
+    <label class="radio">
+      <input
+        type="checkbox"
+        checked={app.settings.checkUpdates}
+        onchange={(e) => setCheckUpdates(e.currentTarget.checked)}
+      />
+      Controlla gli aggiornamenti all'avvio
+    </label>
+    <div class="row">
+      <button onclick={checkUpdates} disabled={checking}>
+        {checking ? 'Controllo in corso…' : 'Controlla aggiornamenti'}
+      </button>
+    </div>
+    {#if updateError}<p class="error-text">{updateError}</p>{/if}
+    {#if updateMessage}<p class="ok">{updateMessage}</p>{/if}
   </section>
 </div>
 

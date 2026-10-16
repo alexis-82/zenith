@@ -4,11 +4,17 @@ import {main} from '../models';
 import {config} from '../models';
 import {model} from '../models';
 
+export function CheckUpdate():Promise<main.UpdateInfo>;
+
 export function CreateNewFile(arg1:string):Promise<main.InitState>;
 
 export function GetSettings():Promise<config.Settings>;
 
+export function GetVersion():Promise<string>;
+
 export function Init():Promise<main.InitState>;
+
+export function InstallUpdate():Promise<void>;
 
 export function OpenURL(arg1:string):Promise<void>;
 

@@ -4,6 +4,7 @@ export namespace config {
 	    dataPath: string;
 	    autosaveSeconds: number;
 	    theme: string;
+	    checkUpdates: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -14,6 +15,7 @@ export namespace config {
 	        this.dataPath = source["dataPath"];
 	        this.autosaveSeconds = source["autosaveSeconds"];
 	        this.theme = source["theme"];
+	        this.checkUpdates = source["checkUpdates"];
 	    }
 	}
 
@@ -54,6 +56,28 @@ export namespace main {
 		    }
 		    return a;
 		}
+	}
+	export class UpdateInfo {
+	    current: string;
+	    latest: string;
+	    available: boolean;
+	    canInstall: boolean;
+	    noRelease: boolean;
+	    notes: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.current = source["current"];
+	        this.latest = source["latest"];
+	        this.available = source["available"];
+	        this.canInstall = source["canInstall"];
+	        this.noRelease = source["noRelease"];
+	        this.notes = source["notes"];
+	    }
 	}
 
 }

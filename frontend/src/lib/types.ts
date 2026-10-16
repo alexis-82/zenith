@@ -31,6 +31,17 @@ export interface Settings {
   dataPath: string
   autosaveSeconds: number
   theme: Theme
+  checkUpdates: boolean
+}
+
+/** Mirror of UpdateInfo in app_update.go. */
+export interface UpdateInfo {
+  current: string
+  latest: string
+  available: boolean
+  canInstall: boolean
+  noRelease: boolean
+  notes: string
 }
 
 export interface InitState {

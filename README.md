@@ -83,3 +83,39 @@ sudo sh build/linux/install.sh --uninstall
 Il launcher imposta `WEBKIT_DISABLE_DMABUF_RENDERER=1`, che evita la finestra bianca di WebKitGTK con alcuni driver (NVIDIA, alcune sessioni Wayland). Per non usarlo: `WEBKIT_DISABLE_DMABUF_RENDERER=0 zenith-launch.sh`.
 
 Se il collegamento sul desktop non si avvia, sceglierlo con il tasto destro e selezionare **Consenti avvio** (GNOME) oppure renderlo eseguibile dal file manager.
+
+## Aggiornamenti
+
+Zenith confronta la propria versione con l'ultima release di <https://github.com/alexis-82/zenith/releases>: all'avvio (disattivabile in **Impostazioni â†’ Aggiornamenti**) e con il pulsante **Controlla aggiornamenti**. Se c'è una versione più recente mostra le note di rilascio e, con **Scarica e installa**:
+
+- **Windows**: scarica il file `*-setup.exe` della release, lo verifica, salva i dati, avvia il setup e si chiude;
+- **Linux**: scarica `zenith-linux-<arch>.tar.gz`, lo verifica e lo installa con `pkexec zenith-update.sh` (richiesta password), poi riavvia Zenith.
+
+Il download è accettato solo da `github.com/alexis-82/zenith/releases/download/â€¦` e viene verificato per dimensione e, se GitHub lo fornisce, SHA-256. Offline o senza release l'app funziona normalmente.
+
+Su Linux l'aggiornamento si può fare anche a mano: `sudo zenith-update.sh` (scarica e installa l'ultima release) oppure `sudo zenith-update.sh zenith-linux-amd64.tar.gz`.
+
+### Pubblicare una release
+
+La versione è il **tag** della release, nel formato `vX.Y.Z`, e va impressa in compilazione: le build senza versione risultano `dev` e non propongono aggiornamenti.
+
+1. Scegli la versione, es. `v1.2.0`, e crea il tag:
+   ```sh
+   git tag v1.2.0
+   git push origin v1.2.0
+   ```
+2. **Windows** (installer):
+   ```powershell
+   wails build -ldflags "-X main.version=v1.2.0"
+   makensis /DVERSION=1.2.0 build\windows\installer\zenith.nsi
+   ```
+   Risultato: `build\bin\Zenith-1.2.0-setup.exe` (il nome deve finire con `-setup.exe`).
+3. **Linux** (su una macchina Linux, per ogni architettura):
+   ```sh
+   wails build -tags webkit2_41 -ldflags "-X main.version=v1.2.0"
+   sh build/linux/package.sh
+   ```
+   Risultato: `build/bin/zenith-linux-amd64.tar.gz` (o `-arm64`).
+4. Su GitHub â†’ **Releases â†’ Draft a new release**: scegli il tag `v1.2.0`, scrivi le note (Markdown, vengono mostrate nell'app) e allega i due file. Pubblica.
+   - Le release segnate come **pre-release** o **draft** non vengono proposte.
+   - Con la GitHub CLI: `gh release create v1.2.0 build/bin/Zenith-1.2.0-setup.exe build/bin/zenith-linux-amd64.tar.gz --notes-file NOTE.md`

@@ -11,6 +11,13 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// version is the release tag, set at build time:
+//
+//	wails build -ldflags "-X main.version=v1.2.3"
+//
+// "dev" marks a development build (no update is offered).
+var version = "dev"
+
 func main() {
 	// Create an instance of the app structure
 	app := NewApp()

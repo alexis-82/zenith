@@ -18,10 +18,11 @@ type Settings struct {
 	DataPath        string `json:"dataPath"`
 	AutosaveSeconds int    `json:"autosaveSeconds"`
 	Theme           string `json:"theme"` // system | light | dark
+	CheckUpdates    bool   `json:"checkUpdates"`
 }
 
 func Defaults() Settings {
-	return Settings{AutosaveSeconds: DefaultAutosaveSeconds, Theme: "system"}
+	return Settings{AutosaveSeconds: DefaultAutosaveSeconds, Theme: "system", CheckUpdates: true}
 }
 
 // Normalize clamps out-of-range values.
