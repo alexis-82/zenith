@@ -156,7 +156,7 @@ func IsNewer(latest, current string) (bool, error) {
 }
 
 // PickAsset returns the release file to install on goos/goarch:
-// Windows "*-setup.exe", Linux "zenith-linux-<goarch>.tar.gz".
+// Windows "*-installer.exe", Linux "zenith-linux-<goarch>.tar.gz".
 func PickAsset(assets []Asset, goos, goarch string) (Asset, error) {
 	for _, a := range assets {
 		name := strings.ToLower(a.Name)

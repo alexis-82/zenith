@@ -1,6 +1,5 @@
 # Release di Zenith: parte quando si pubblica un tag vX.Y.Z.
 #   test -> build Windows + build Linux (in parallelo) -> GitHub Release
-# Da copiare in: zenith/.github/workflows/release.yml
 name: Release
 
 on:

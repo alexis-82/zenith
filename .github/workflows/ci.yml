@@ -1,6 +1,5 @@
 # CI di Zenith: a ogni push su main e a ogni pull request verifica che
 # il codice compili e che i test passino. Non produce nulla da scaricare.
-# Da copiare in: zenith/.github/workflows/ci.yml
 name: CI
 
 on:

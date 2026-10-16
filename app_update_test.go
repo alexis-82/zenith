@@ -35,7 +35,7 @@ func newFakeGitHub(t *testing.T, tag string) *fakeGitHub {
 			w.WriteHeader(f.status)
 			return
 		}
-		name := "Zenith-1.0.0-setup.exe"
+		name := "Zenith-1.0.0-amd64-installer.exe"
 		if goruntime.GOOS == "linux" {
 			name = "zenith-linux-" + goruntime.GOARCH + ".tar.gz"
 		}

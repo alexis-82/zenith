@@ -22,7 +22,7 @@
 ;    makensis /DVERSION=1.2.0 build\windows\installer\zenith.nsi
 ;  Eseguibile con un altro nome (es. wails build -o zenith_win.exe):
 ;    makensis /DSOURCE_EXE=..\..\bin\zenith_win.exe build\windows\installer\zenith.nsi
-;  Output: build\bin\Zenith-<versione>-setup.exe
+;  Output: build\bin\Zenith-<versione>-amd64-installer.exe
 ;
 ;  makensis lavora nella cartella di questo file: i percorsi relativi
 ;  qui sotto partono da build\windows\installer.
@@ -142,7 +142,7 @@ LangString UnSecSettingsDesc  ${LANG_ENGLISH} "Also removes the settings (data f
 LangString MsgWebView2 ${LANG_ITALIAN} "${APP_NAME} richiede Microsoft Edge WebView2 Runtime, che non risulta installato.$\n$\nVuoi aprire la pagina di download di Microsoft?"
 LangString MsgWebView2 ${LANG_ENGLISH} "${APP_NAME} requires the Microsoft Edge WebView2 Runtime, which does not seem to be installed.$\n$\nDo you want to open the Microsoft download page?"
 
-; Proprietà del file setup.exe (tasto destro > Proprietà > Dettagli)
+; Proprietà dell'installer (tasto destro > Proprietà > Dettagli)
 VIProductVersion "${VERSION}.0"
 VIFileVersion    "${VERSION}.0"
 VIAddVersionKey /LANG=${LANG_ITALIAN} "ProductName"     "${APP_NAME}"
