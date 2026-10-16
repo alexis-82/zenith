@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	goruntime "runtime"
 	"sync"
 
 	"zenith/internal/persist"
@@ -56,7 +55,7 @@ func (a *App) CheckUpdate() (UpdateInfo, error) {
 	if newer, err := ghupdate.IsNewer(r.Version, version); err == nil {
 		info.Available = newer // false for "dev" builds
 	}
-	_, assetErr := ghupdate.PickAsset(r.Assets, goruntime.GOOS, goruntime.GOARCH)
+	_, assetErr := platformAsset(r.Assets)
 	info.CanInstall = info.Available && assetErr == nil
 	return info, nil
 }
@@ -85,7 +84,7 @@ func (a *App) InstallUpdate() error {
 	if newer, err := ghupdate.IsNewer(r.Version, version); err != nil || !newer {
 		return errors.New("nessun aggiornamento da installare")
 	}
-	asset, err := ghupdate.PickAsset(r.Assets, goruntime.GOOS, goruntime.GOARCH)
+	asset, err := platformAsset(r.Assets)
 	if err != nil {
 		return err
 	}

@@ -194,3 +194,23 @@ func TestLiveGitHub(t *testing.T) {
 		}
 	}
 }
+
+func TestPickDeb(t *testing.T) {
+	assets := []Asset{
+		{Name: "zenith-linux-amd64.tar.gz"},
+		{Name: "zenith_1.2.0_arm64.deb"},
+		{Name: "zenith_1.2.0_amd64.deb"},
+	}
+	if a, err := PickDeb(assets, "amd64"); err != nil || a.Name != "zenith_1.2.0_amd64.deb" {
+		t.Fatalf("amd64: %v %v", a, err)
+	}
+	if a, err := PickDeb(assets, "arm64"); err != nil || a.Name != "zenith_1.2.0_arm64.deb" {
+		t.Fatalf("arm64: %v %v", a, err)
+	}
+	if _, err := PickDeb(assets[:1], "amd64"); !errors.Is(err, ErrNoAsset) {
+		t.Fatalf("no deb: expected ErrNoAsset, got %v", err)
+	}
+	if _, err := PickDeb([]Asset{{Name: "other_1.0.0_amd64.deb"}}, "amd64"); !errors.Is(err, ErrNoAsset) {
+		t.Fatalf("other package: expected ErrNoAsset, got %v", err)
+	}
+}

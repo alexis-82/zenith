@@ -5,8 +5,11 @@ package main
 import (
 	"fmt"
 	"path/filepath"
+	goruntime "runtime"
 
 	"golang.org/x/sys/windows"
+
+	ghupdate "zenith/internal/update"
 )
 
 // installUpdate starts the downloaded setup.exe; the app quits right after.
@@ -19,4 +22,8 @@ func installUpdate(path string) error {
 		return fmt.Errorf("impossibile avviare il setup: %w", err)
 	}
 	return nil
+}
+
+func platformAsset(assets []ghupdate.Asset) (ghupdate.Asset, error) {
+	return ghupdate.PickAsset(assets, "windows", goruntime.GOARCH)
 }

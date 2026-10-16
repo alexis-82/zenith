@@ -91,16 +91,23 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
-      - name: Installa Wails CLI
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.16.0
-      - name: Build + pacchetto
+      - name: Installa Wails CLI e nfpm
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@v2.16.0
+          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.48.0
+      - name: Build + pacchetti (.tar.gz e .deb)
         run: |
           wails build -tags webkit2_41 -ldflags "-X main.version=${{ github.ref_name }}"
           sh build/linux/package.sh
+          VERSION="${GITHUB_REF_NAME#v}" ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager deb --target build/bin/
+          dpkg-deb --info build/bin/zenith_*_amd64.deb
+          dpkg-deb --contents build/bin/zenith_*_amd64.deb
       - uses: actions/upload-artifact@v7
         with:
           name: linux
-          path: build/bin/zenith-linux-*.tar.gz
+          path: |
+            build/bin/zenith-linux-*.tar.gz
+            build/bin/zenith_*.deb
           if-no-files-found: error
 
   # 3. Raccoglie i file, calcola i checksum e pubblica la release

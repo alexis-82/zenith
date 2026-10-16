@@ -1,0 +1,44 @@
+# Debian package for Zenith, built with nfpm (https://nfpm.goreleaser.com).
+# From the project root, after the Linux build:
+#
+#   wails build -tags webkit2_41 -ldflags "-X main.version=v1.2.0"
+#   VERSION=1.2.0 ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager deb --target build/bin/
+#
+# Output: build/bin/zenith_1.2.0_amd64.deb (the name Zenith's updater looks for).
+# Install: sudo apt install ./zenith_1.2.0_amd64.deb    Remove: sudo apt remove zenith
+
+name: zenith
+version: ${VERSION}          # X.Y.Z, without the "v" of the tag
+arch: ${ARCH}                # amd64 | arm64
+platform: linux
+section: utils
+priority: optional
+maintainer: alexis-82 <alessioabrugiati@gmail.com>
+homepage: https://github.com/alexis-82/zenith
+description: |
+  Kanban board personale.
+  Progetti e task in un unico file JSON, da tenere in una cartella
+  sincronizzata (es. Nextcloud) per usarli da più computer.
+
+# Built with -tags webkit2_41 (GTK 3 + WebKitGTK 4.1)
+depends:
+  - libgtk-3-0
+  - libwebkit2gtk-4.1-0
+
+contents:
+  - src: build/bin/zenith
+    dst: /usr/bin/zenith
+    file_info:
+      mode: 0755
+  - src: build/linux/zenith-launch.sh
+    dst: /usr/bin/zenith-launch
+    file_info:
+      mode: 0755
+  - src: build/linux/zenith.desktop
+    dst: /usr/share/applications/zenith.desktop
+    file_info:
+      mode: 0644
+  - src: build/appicon.png
+    dst: /usr/share/pixmaps/zenith.png
+    file_info:
+      mode: 0644

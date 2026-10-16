@@ -34,7 +34,26 @@ Su un computer nuovo, se Nextcloud non ha ancora scaricato il file, Zenith segna
 - Se due computer modificano il file mentre sono offline, Nextcloud può creare una copia `… (conflicted copy …).json`. Zenith la ignora: se serve, confronta e unisci a mano.
 - Su Linux con WebKitGTK datato il tema "Sistema" potrebbe non seguire il tema scuro: in quel caso scegli "Scuro".
 
-### Linux: installazione nel menu e collegamento sul desktop
+### Linux: pacchetto .deb (Debian, Ubuntu, Mint)
+
+Dalla pagina delle release scarica `zenith_<versione>_amd64.deb` e installalo (apt installa anche le dipendenze GTK/WebKitGTK):
+
+```sh
+sudo apt install ./zenith_1.2.0_amd64.deb
+```
+
+Installa `/usr/bin/zenith`, il launcher `/usr/bin/zenith-launch`, la voce di menu e l'icona. Per disinstallare: `sudo apt remove zenith` (il file dati JSON e `~/.config/Zenith` restano intatti).
+
+Per creare il pacchetto a mano (su Linux, dalla root del progetto) serve [nfpm](https://nfpm.goreleaser.com): `go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.48.0`.
+
+```sh
+wails build -tags webkit2_41 -ldflags "-X main.version=v1.2.0"
+VERSION=1.2.0 ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager deb --target build/bin/
+```
+
+La configurazione è in `build/linux/nfpm.yaml`; nelle release il pacchetto lo crea il workflow `release.yml`.
+
+### Linux: installazione con script (altre distribuzioni)
 
 Dalla root del progetto, dopo la build:
 
@@ -46,7 +65,7 @@ sudo sh build/linux/install.sh
 L'installer copia:
 
 - `build/bin/zenith` in `/usr/local/bin/zenith`;
-- il launcher `build/linux/zenith-launch.sh` in `/usr/local/bin/`;
+- il launcher `build/linux/zenith-launch.sh` come `/usr/local/bin/zenith-launch`;
 - la voce di menu `zenith.desktop` in `/usr/share/applications/`;
 - l'icona in `/usr/share/pixmaps/zenith.png`;
 - un collegamento `zenith.desktop` sul Desktop dell'utente che ha lanciato `sudo`, segnato come attendibile (GNOME non avvia i collegamenti non attendibili).
@@ -57,17 +76,18 @@ Per aggiornare basta rifare build e install. Per disinstallare (il file dati JSO
 sudo sh build/linux/install.sh --uninstall
 ```
 
-Il launcher imposta `WEBKIT_DISABLE_DMABUF_RENDERER=1`, che evita la finestra bianca di WebKitGTK con alcuni driver (NVIDIA, alcune sessioni Wayland). Per non usarlo: `WEBKIT_DISABLE_DMABUF_RENDERER=0 zenith-launch.sh`.
+Il launcher imposta `WEBKIT_DISABLE_DMABUF_RENDERER=1`, che evita la finestra bianca di WebKitGTK con alcuni driver (NVIDIA, alcune sessioni Wayland). Per non usarlo: `WEBKIT_DISABLE_DMABUF_RENDERER=0 zenith-launch`.
 
 Se il collegamento sul desktop non si avvia, sceglierlo con il tasto destro e selezionare **Consenti avvio** (GNOME) oppure renderlo eseguibile dal file manager.
 
 ## Aggiornamenti
 
-Zenith confronta la propria versione con l'ultima release di <https://github.com/alexis-82/zenith/releases>: all'avvio (disattivabile in **Impostazioni → Aggiornamenti**) e con il pulsante **Controlla aggiornamenti**. Se c'� una versione pi� recente mostra le note di rilascio e, con **Scarica e installa**:
+Zenith confronta la propria versione con l'ultima release di <https://github.com/alexis-82/zenith/releases>: all'avvio (disattivabile in **Impostazioni → Aggiornamenti**) e con il pulsante **Controlla aggiornamenti**. Se c'è una versione più recente mostra le note di rilascio e, con **Scarica e installa**:
 
 - **Windows**: scarica il file `*-installer.exe` della release, lo verifica, salva i dati, avvia il setup e si chiude;
-- **Linux**: scarica `zenith-linux-<arch>.tar.gz`, lo verifica e lo installa con `pkexec zenith-update.sh` (richiesta password), poi riavvia Zenith.
+- **Linux**, installato con il `.deb`: scarica `zenith_<versione>_<arch>.deb`, lo verifica e lo installa con `pkexec apt-get install` (richiesta password), poi riavvia Zenith;
+- **Linux**, installato con `install.sh`: scarica `zenith-linux-<arch>.tar.gz`, lo verifica e lo installa con `pkexec zenith-update.sh`, poi riavvia Zenith.
 
-Il download é accettato solo da `github.com/alexis-82/zenith/releases/download/…` e viene verificato per dimensione e, se GitHub lo fornisce, SHA-256. Offline o senza release l'app funziona normalmente.
+Il download è accettato solo da `github.com/alexis-82/zenith/releases/download/…` e viene verificato per dimensione e, se GitHub lo fornisce, SHA-256. Offline o senza release l'app funziona normalmente.
 
-Su Linux l'aggiornamento si può fare anche a mano: `sudo zenith-update.sh` (scarica e installa l'ultima release) oppure `sudo zenith-update.sh zenith-linux-amd64.tar.gz`.
+Su Linux l'aggiornamento si può fare anche a mano: `sudo apt install ./zenith_<versione>_amd64.deb` (pacchetto .deb), oppure `sudo zenith-update.sh` (scarica e installa l'ultima release) oppure `sudo zenith-update.sh zenith-linux-amd64.tar.gz`.

@@ -8,7 +8,10 @@
 set -e
 
 BIN=/usr/local/bin/zenith
-LAUNCHER=/usr/local/bin/zenith-launch.sh
+LAUNCHER=/usr/local/bin/zenith-launch
+# Previous launcher name: kept as a link, desktop shortcuts created by older
+# versions still point to it.
+OLD_LAUNCHER=/usr/local/bin/zenith-launch.sh
 UPDATER=/usr/local/bin/zenith-update.sh
 DESKTOP_FILE=/usr/share/applications/zenith.desktop
 ICON=/usr/share/pixmaps/zenith.png
@@ -38,7 +41,7 @@ refresh_menu() {
 DESKTOP_DIR=$(user_desktop_dir)
 
 if [ "$1" = "--uninstall" ]; then
-    rm -f "$BIN" "$LAUNCHER" "$UPDATER" "$DESKTOP_FILE" "$ICON"
+    rm -f "$BIN" "$LAUNCHER" "$OLD_LAUNCHER" "$UPDATER" "$DESKTOP_FILE" "$ICON"
     [ -n "$DESKTOP_DIR" ] && rm -f "$DESKTOP_DIR/zenith.desktop"
     refresh_menu
     echo "Zenith rimosso. Il file dati JSON e le impostazioni (~/.config/Zenith) non sono stati toccati."
@@ -52,6 +55,7 @@ fi
 
 install -m 0755 build/bin/zenith "$BIN"
 install -m 0755 build/linux/zenith-launch.sh "$LAUNCHER"
+ln -sf zenith-launch "$OLD_LAUNCHER"
 install -m 0755 build/linux/zenith-update.sh "$UPDATER"
 install -m 0644 build/linux/zenith.desktop "$DESKTOP_FILE"
 install -m 0644 build/appicon.png "$ICON"

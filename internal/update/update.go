@@ -174,6 +174,18 @@ func PickAsset(assets []Asset, goos, goarch string) (Asset, error) {
 	return Asset{}, ErrNoAsset
 }
 
+// PickDeb returns the Debian package for goarch, named by nfpm
+// "zenith_<version>_<goarch>.deb".
+func PickDeb(assets []Asset, goarch string) (Asset, error) {
+	for _, a := range assets {
+		name := strings.ToLower(a.Name)
+		if strings.HasPrefix(name, "zenith_") && strings.HasSuffix(name, "_"+goarch+".deb") {
+			return a, nil
+		}
+	}
+	return Asset{}, ErrNoAsset
+}
+
 // Download saves the asset in a new private temporary directory and verifies
 // its size and, when known, its SHA-256. progress may be nil.
 func (c *Checker) Download(ctx context.Context, a Asset, progress func(done, total int64)) (string, error) {
