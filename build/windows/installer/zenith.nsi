@@ -64,7 +64,7 @@ SetCompressor /SOLID lzma
 ;  Impostazioni generali
 ; ---------------------------------------------------------------------
 Name "${APP_NAME}"
-OutFile "..\..\bin\${APP_NAME}-${VERSION}-setup.exe"
+OutFile "..\..\bin\${APP_NAME}-${VERSION}-amd64-installer.exe"
 InstallDir "$LOCALAPPDATA\Programs\${APP_NAME}"
 InstallDirRegKey HKCU "${APP_REG_KEY}" "InstallDir"
 RequestExecutionLevel user
