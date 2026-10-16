@@ -41,12 +41,12 @@ func TestIsNewer(t *testing.T) {
 
 func TestPickAsset(t *testing.T) {
 	assets := []Asset{
-		{Name: "Zenith-1.2.0-setup.exe"},
+		{Name: "Zenith-1.2.0-amd64-installer.exe"},
 		{Name: "zenith-linux-amd64.tar.gz"},
 		{Name: "zenith-linux-arm64.tar.gz"},
 		{Name: "notes.txt"},
 	}
-	if a, err := PickAsset(assets, "windows", "amd64"); err != nil || a.Name != "Zenith-1.2.0-setup.exe" {
+	if a, err := PickAsset(assets, "windows", "amd64"); err != nil || a.Name != "Zenith-1.2.0-amd64-installer.exe" {
 		t.Fatalf("windows: %v %v", a, err)
 	}
 	if a, err := PickAsset(assets, "linux", "arm64"); err != nil || a.Name != "zenith-linux-arm64.tar.gz" {
@@ -74,7 +74,7 @@ func TestLatest(t *testing.T) {
 			t.Errorf("missing user agent: %q", r.Header.Get("User-Agent"))
 		}
 		fmt.Fprint(w, `{"tag_name":"v1.2.0","body":"## Novità\n- x","html_url":"https://github.com/r/1",
-			"assets":[{"name":"Zenith-1.2.0-setup.exe","size":10,"browser_download_url":"https://h/a.exe","digest":"sha256:ABCD"}]}`)
+			"assets":[{"name":"Zenith-1.2.0-amd64-installer.exe","size":10,"browser_download_url":"https://h/a.exe","digest":"sha256:ABCD"}]}`)
 	}))
 	defer srv.Close()
 
@@ -124,7 +124,7 @@ func TestDownload(t *testing.T) {
 	}))
 	defer srv.Close()
 	c := checker(srv)
-	asset := Asset{Name: "Zenith-1.2.0-setup.exe", URL: srv.URL + "/dl/v1.2.0/Zenith-1.2.0-setup.exe", Size: int64(len(payload)), SHA256: hex.EncodeToString(sum[:])}
+	asset := Asset{Name: "Zenith-1.2.0-amd64-installer.exe", URL: srv.URL + "/dl/v1.2.0/Zenith-1.2.0-amd64-installer.exe", Size: int64(len(payload)), SHA256: hex.EncodeToString(sum[:])}
 
 	var last int64
 	path, err := c.Download(context.Background(), asset, func(done, total int64) { last = done })
@@ -155,7 +155,7 @@ func TestDownload(t *testing.T) {
 
 	// URL outside the allowed prefix
 	evil := asset
-	evil.URL = srv.URL + "/other/Zenith-1.2.0-setup.exe"
+	evil.URL = srv.URL + "/other/Zenith-1.2.0-amd64-installer.exe"
 	if _, err := c.Download(context.Background(), evil, nil); err == nil || !strings.Contains(err.Error(), "non consentito") {
 		t.Fatalf("expected prefix error, got %v", err)
 	}
@@ -169,7 +169,7 @@ func TestDownload(t *testing.T) {
 }
 
 func TestDefaultPrefixMatchesRepo(t *testing.T) {
-	if !strings.HasPrefix("https://github.com/alexis-82/zenith/releases/download/v1.0.0/Zenith-1.0.0-setup.exe", DefaultDownloadPrefix) {
+	if !strings.HasPrefix("https://github.com/alexis-82/zenith/releases/download/v1.0.0/Zenith-1.0.0-amd64-installer.exe", DefaultDownloadPrefix) {
 		t.Fatal("default prefix does not match the repo download URLs")
 	}
 }
