@@ -82,12 +82,12 @@ Se il collegamento sul desktop non si avvia, sceglierlo con il tasto destro e se
 
 ## Aggiornamenti
 
-Zenith confronta la propria versione con l'ultima release di <https://github.com/alexis-82/zenith/releases>: all'avvio (disattivabile in **Impostazioni → Aggiornamenti**) e con il pulsante **Controlla aggiornamenti**. Se c'è una versione più recente mostra le note di rilascio e, con **Scarica e installa**:
+Zenith confronta la propria versione con l'ultima release di <https://github.com/alexis-82/zenith/releases>: all'avvio (disattivabile in **Impostazioni → Aggiornamenti**) e con il pulsante **Controlla aggiornamenti**. Se c'è una versione più recente mostra le note di rilascio e, con **Scarica e installa**:
 
 - **Windows**: scarica il file `*-installer.exe` della release, lo verifica, salva i dati, avvia il setup e si chiude;
 - **Linux**, installato con il `.deb`: scarica `zenith_<versione>_<arch>.deb`, lo verifica e lo installa con `pkexec apt-get install` (richiesta password), poi riavvia Zenith;
 - **Linux**, installato con `install.sh`: scarica `zenith-linux-<arch>.tar.gz`, lo verifica e lo installa con `pkexec zenith-update.sh`, poi riavvia Zenith.
 
-Il download è accettato solo da `github.com/alexis-82/zenith/releases/download/…` e viene verificato per dimensione e, se GitHub lo fornisce, SHA-256. Offline o senza release l'app funziona normalmente.
+Il download è accettato solo da `github.com/alexis-82/zenith/releases/download/…` e viene verificato per dimensione e, se GitHub lo fornisce, SHA-256. Offline o senza release l'app funziona normalmente.
 
 Su Linux l'aggiornamento si può fare anche a mano: `sudo apt install ./zenith_<versione>_amd64.deb` (pacchetto .deb), oppure `sudo zenith-update.sh` (scarica e installa l'ultima release) oppure `sudo zenith-update.sh zenith-linux-amd64.tar.gz`.
