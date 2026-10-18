@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-10-18
+
+### Added
+
+- AppStream metadata in the `.deb` and `.rpm` packages: once installed, KDE Discover shows Zenith with its name, icon, developer, description and license instead of an anonymous package.
+- The application icon is also installed in the standard `hicolor` icon theme.
+
 ## [1.2.0] - 2026-10-18
 
 ### Added

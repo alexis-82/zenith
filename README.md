@@ -42,7 +42,7 @@ Dalla pagina delle release scarica `zenith_<versione>_amd64.deb` e installalo (a
 sudo apt install ./zenith_1.2.0_amd64.deb
 ```
 
-Installa `/usr/bin/zenith`, il launcher `/usr/bin/zenith-launch`, la voce di menu, l'icona e i metadati AppStream (`/usr/share/metainfo/io.github.alexis_82.zenith.metainfo.xml`), grazie ai quali Zenith compare con nome, icona e autore in GNOME Software e KDE Discover. Per disinstallare: `sudo apt remove zenith` (il file dati JSON e `~/.config/Zenith` restano intatti).
+Installa `/usr/bin/zenith`, il launcher `/usr/bin/zenith-launch`, la voce di menu, l'icona e i metadati AppStream (`/usr/share/metainfo/io.github.alexis_82.zenith.metainfo.xml`), grazie ai quali Zenith compare con nome, icona e autore in KDE Discover. Per disinstallare: `sudo apt remove zenith` (il file dati JSON e `~/.config/Zenith` restano intatti).
 
 Per creare il pacchetto a mano (su Linux, dalla root del progetto) serve [nfpm](https://nfpm.goreleaser.com): `go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.48.0`.
 
@@ -61,7 +61,7 @@ Dalla pagina delle release scarica `zenith-<versione>-1.x86_64.rpm` e installalo
 sudo dnf install ./zenith-1.2.0-1.x86_64.rpm
 ```
 
-Installa gli stessi file del `.deb` (`/usr/bin/zenith`, `/usr/bin/zenith-launch`, la voce di menu, l'icona e i metadati AppStream per Discover / GNOME Software). Per disinstallare: `sudo dnf remove zenith` (il file dati JSON e `~/.config/Zenith` restano intatti). Serve Fedora 40 o successiva: il programma è compilato su Ubuntu 24.04 e richiede la stessa glibc o più recente.
+Installa gli stessi file del `.deb` (`/usr/bin/zenith`, `/usr/bin/zenith-launch`, la voce di menu, l'icona e i metadati AppStream per KDE Discover). Per disinstallare: `sudo dnf remove zenith` (il file dati JSON e `~/.config/Zenith` restano intatti). Serve Fedora 40 o successiva: il programma è compilato su Ubuntu 24.04 e richiede la stessa glibc o più recente.
 
 Per creare il pacchetto a mano serve nfpm, come per il `.deb`:
 
