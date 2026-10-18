@@ -14,6 +14,8 @@
   const initial = untrack(() => task)
   let title = $state(initial?.title ?? '')
   let description = $state(initial?.description ?? '')
+  // Only used for a new task; existing tasks move by drag & drop.
+  let columnId = $state(untrack(() => app.board?.columns[0]?.id ?? ''))
   let mode = $state<'edit' | 'preview'>(initial?.description ? 'preview' : 'edit')
   let error = $state('')
 
@@ -23,7 +25,7 @@
     e?.preventDefault()
     try {
       app.mutate((b) =>
-        task ? updateTask(b, projectId, task.id, title, description) : addTask(b, projectId, title, description),
+        task ? updateTask(b, projectId, task.id, title, description) : addTask(b, projectId, columnId, title, description),
       )
       onclose()
     } catch (err) {
@@ -110,6 +112,17 @@
 
 <Modal title={task ? 'Modifica task' : 'Nuovo task'} width="640px" {onclose}>
   <form id="task-form" onsubmit={save}>
+    {#if !task}
+      <label>
+        <span class="muted">Colonna</span>
+        <select bind:value={columnId}>
+          {#each app.board?.columns ?? [] as column (column.id)}
+            <option value={column.id}>{column.name}</option>
+          {/each}
+        </select>
+      </label>
+    {/if}
+
     <label>
       <span class="muted">Titolo</span>
       <input bind:value={title} use:focus />

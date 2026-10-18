@@ -217,6 +217,64 @@ describe('task', () => {
     expect(task).toMatchObject({ columnId: 'c_impl', order: 2, description: '**importante**' })
   })
 
+  it('nuovo task: la colonna si sceglie prima del titolo, preselezionata sulla prima', async () => {
+    await start()
+    await userEvent.click(screen.getByRole('button', { name: '+ Nuovo task' }))
+    const dialog = screen.getByRole('dialog', { name: 'Nuovo task' })
+    const select = within(dialog).getByRole('combobox', { name: 'Colonna' }) as HTMLSelectElement
+    expect(within(select).getAllByRole('option').map((o) => o.textContent)).toEqual(['Implementare', 'In corso', 'Terminato'])
+    expect(select.value).toBe('c_impl')
+    const title = within(dialog).getAllByRole('textbox')[0]
+    expect(select.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(document.activeElement).toBe(title)
+  })
+
+  it('nuovo task nella colonna scelta, in fondo', async () => {
+    const board = sampleBoard()
+    board.projects[0].tasks.push({ id: 't_4', title: 'Quarto', description: '', columnId: 'c_doing', order: 0 })
+    await start({ board })
+    await userEvent.click(screen.getByRole('button', { name: '+ Nuovo task' }))
+    const dialog = screen.getByRole('dialog', { name: 'Nuovo task' })
+    await userEvent.selectOptions(within(dialog).getByRole('combobox', { name: 'Colonna' }), 'In corso')
+    await userEvent.type(within(dialog).getAllByRole('textbox')[0], 'Nuovo')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Salva' }))
+
+    const task = lastSent().projects[0].tasks.find((t) => t.title === 'Nuovo')!
+    expect(task).toMatchObject({ columnId: 'c_doing', order: 1 })
+  })
+
+  it('nuovo task con una sola colonna: il selettore resta visibile', async () => {
+    const board = sampleBoard()
+    board.columns = [board.columns[0]]
+    await start({ board })
+    await userEvent.click(screen.getByRole('button', { name: '+ Nuovo task' }))
+    const select = within(screen.getByRole('dialog', { name: 'Nuovo task' })).getByRole('combobox', { name: 'Colonna' })
+    expect(within(select).getAllByRole('option').map((o) => o.textContent)).toEqual(['Implementare'])
+  })
+
+  it('modifica task: nessuna scelta della colonna', async () => {
+    await start()
+    await userEvent.click(screen.getByRole('button', { name: /Primo/ }))
+    const dialog = screen.getByRole('dialog', { name: 'Modifica task' })
+    expect(within(dialog).queryByRole('combobox')).toBeNull()
+  })
+
+  it('nuovo task in una colonna eliminata da un altro dispositivo: errore, modale aperto', async () => {
+    await start()
+    await userEvent.click(screen.getByRole('button', { name: '+ Nuovo task' }))
+    const dialog = screen.getByRole('dialog', { name: 'Nuovo task' })
+    await userEvent.selectOptions(within(dialog).getByRole('combobox', { name: 'Colonna' }), 'In corso')
+    await userEvent.type(within(dialog).getAllByRole('textbox')[0], 'Nuovo')
+    const without = sampleBoard()
+    without.columns = without.columns.filter((c) => c.id !== 'c_doing')
+    app.setBoard(without)
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Salva' }))
+    expect(await within(dialog).findByText(/colonna non esiste più/)).toBeTruthy()
+    expect(screen.getByRole('dialog', { name: 'Nuovo task' })).toBeTruthy()
+    expect(api.UpdateBoard).not.toHaveBeenCalled()
+  })
+
   it('modifica ed elimina un task (con conferma)', async () => {
     await start()
     await userEvent.click(screen.getByRole('button', { name: /Primo/ }))

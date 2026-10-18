@@ -34,9 +34,9 @@ function withProjects(): { board: Board; p1: string; p2: string } {
   const p1 = r.id
   r = addProject(r.board, 'Due')
   const p2 = r.id
-  let board = addTask(r.board, p1, 'A', '')
-  board = addTask(board, p1, 'B', '')
-  board = addTask(board, p2, 'C', 'desc')
+  let board = addTask(r.board, p1, 'c_impl', 'A', '')
+  board = addTask(board, p1, 'c_impl', 'B', '')
+  board = addTask(board, p2, 'c_impl', 'C', 'desc')
   return { board, p1, p2 }
 }
 
@@ -107,6 +107,25 @@ describe('tasks', () => {
       ['A', 0],
       ['B', 1],
     ])
+  })
+
+  it('adds at the bottom of the chosen column, numbering only that column', () => {
+    const { board, p1 } = withProjects()
+    let b = addTask(board, p1, 'c_doing', 'X', '')
+    b = addTask(b, p1, 'c_doing', 'Y', '')
+    const p = project(b, p1)
+    expect(tasksInColumn(p, 'c_doing').map((t) => [t.title, t.order])).toEqual([
+      ['X', 0],
+      ['Y', 1],
+    ])
+    expect(tasksInColumn(p, 'c_impl').map((t) => t.title)).toEqual(['A', 'B'])
+  })
+
+  it('refuses a column that no longer exists without touching the input', () => {
+    const { board, p1 } = withProjects()
+    const before = structuredClone(board)
+    expect(() => addTask(board, p1, 'c_missing', 'X', '')).toThrow(/colonna non esiste più/)
+    expect(board).toEqual(before)
   })
 
   it('updates and deletes', () => {

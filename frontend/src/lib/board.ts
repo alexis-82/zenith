@@ -78,9 +78,11 @@ export function tasksInColumn(project: Project, columnId: string): Task[] {
   return project.tasks.filter((t) => t.columnId === columnId).sort((a, b) => a.order - b.order)
 }
 
-/** Adds a task at the bottom of the first column. */
-export function addTask(board: Board, projectId: string, title: string, description: string): Board {
-  const columnId = board.columns[0].id
+/** Adds a task at the bottom of the given column. */
+export function addTask(board: Board, projectId: string, columnId: string, title: string, description: string): Board {
+  if (!board.columns.some((c) => c.id === columnId)) {
+    throw new Error('La colonna non esiste più (forse è stata eliminata da un altro dispositivo)')
+  }
   const t = cleanName(title, 'del task')
   return mapProject(board, projectId, (p) => {
     const last = tasksInColumn(p, columnId).at(-1)
