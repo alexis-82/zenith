@@ -53,3 +53,13 @@ contents:
     dst: /usr/share/pixmaps/zenith.png
     file_info:
       mode: 0644
+  # appicon.png is an SVG: in the icon theme it gets its real extension
+  - src: build/appicon.png
+    dst: /usr/share/icons/hicolor/scalable/apps/zenith.svg
+    file_info:
+      mode: 0644
+  # AppStream metadata: Zenith shown as an app in Discover / GNOME Software
+  - src: build/linux/io.github.alexis_82.zenith.metainfo.xml
+    dst: /usr/share/metainfo/io.github.alexis_82.zenith.metainfo.xml
+    file_info:
+      mode: 0644

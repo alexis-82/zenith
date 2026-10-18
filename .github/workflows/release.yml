@@ -98,6 +98,14 @@ jobs:
         run: |
           go install github.com/wailsapp/wails/v2/cmd/wails@v2.16.0
           go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.48.0
+      # Versione del tag nei metadati AppStream (il file nel repo non ne ha),
+      # poi convalida: metadati non validi = niente release
+      - name: Metadati AppStream
+        run: |
+          sudo apt-get install -y appstream desktop-file-utils
+          sh build/linux/metainfo-release.sh build/linux/io.github.alexis_82.zenith.metainfo.xml "${GITHUB_REF_NAME#v}" "$(date -u +%F)"
+          desktop-file-validate build/linux/zenith.desktop
+          appstreamcli validate --no-net build/linux/io.github.alexis_82.zenith.metainfo.xml
       - name: Build + pacchetti (.tar.gz, .deb e .rpm)
         run: |
           wails build -tags webkit2_41 -ldflags "-X main.version=${{ github.ref_name }}"
@@ -112,7 +120,7 @@ jobs:
         run: |
           for img in fedora:40 fedora:latest; do
             echo "::group::$img"
-            docker run --rm -v "$PWD/build/bin:/pkg:ro" "$img" sh -euc '
+            docker run --rm -e VERSION="${GITHUB_REF_NAME#v}" -v "$PWD/build/bin:/pkg:ro" "$img" sh -euc '
               rpm -qpi /pkg/zenith-*.rpm
               rpm -qpR /pkg/zenith-*.rpm
               rpm -qpl /pkg/zenith-*.rpm
@@ -125,6 +133,16 @@ jobs:
               if ldd /usr/bin/zenith 2>&1 | grep "not found"; then
                 echo "librerie mancanti per /usr/bin/zenith" >&2; exit 1
               fi
+              # AppStream: quello che legge Discover (nome, sviluppatore, pacchetto)
+              M=/usr/share/metainfo/io.github.alexis_82.zenith.metainfo.xml
+              grep -q "<release version=\"$VERSION\"" "$M"
+              test -f /usr/share/icons/hicolor/scalable/apps/zenith.svg
+              dnf install -y appstream
+              appstreamcli refresh-cache --force
+              appstreamcli get io.github.alexis_82.zenith --details | tee /tmp/appstream.txt
+              grep -Eiq "^ *name: *zenith$" /tmp/appstream.txt
+              grep -Eiq "^ *developer[^:]*: *alexis-82$" /tmp/appstream.txt
+              grep -Eiq "^ *package[^:]*: *zenith$" /tmp/appstream.txt
             '
             echo "::endgroup::"
           done

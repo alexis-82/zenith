@@ -61,3 +61,22 @@ jobs:
 
       - run: go vet -tags webkit2_41 ./...
       - run: go test -tags webkit2_41 ./...
+
+  # Voce di menu e metadati AppStream dei pacchetti Linux: errori qui
+  # bloccherebbero la release, meglio vederli a ogni push
+  linux-metadata:
+    name: Metadati Linux (desktop + AppStream)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Strumenti di convalida
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y appstream desktop-file-utils
+      - run: desktop-file-validate build/linux/zenith.desktop
+      # Il file nel repo non ha <releases>: si convalida come sarà nei pacchetti
+      - name: Convalida AppStream
+        run: |
+          cp build/linux/io.github.alexis_82.zenith.metainfo.xml "$RUNNER_TEMP/"
+          sh build/linux/metainfo-release.sh "$RUNNER_TEMP/io.github.alexis_82.zenith.metainfo.xml" 0.0.0 "$(date -u +%F)"
+          appstreamcli validate --no-net "$RUNNER_TEMP/io.github.alexis_82.zenith.metainfo.xml"

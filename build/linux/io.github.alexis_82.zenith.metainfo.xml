@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AppStream metadata for Zenith, installed by the .deb and .rpm packages in
+  /usr/share/metainfo/ so that software centers (KDE Discover, GNOME Software)
+  show Zenith as an application.
+
+  <releases> is added at build time by build/linux/metainfo-release.sh with
+  the version of the git tag: do not add it here.
+-->
+<component type="desktop-application">
+  <id>io.github.alexis_82.zenith</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <name>Zenith</name>
+  <summary>Personal kanban board for projects and tasks</summary>
+  <summary xml:lang="it">Kanban board personale per progetti e task</summary>
+
+  <developer id="io.github.alexis_82">
+    <name>alexis-82</name>
+  </developer>
+
+  <description>
+    <p>Zenith is a simple, personal kanban board to organize projects and their tasks in columns.</p>
+    <p xml:lang="it">Zenith è una kanban board personale e semplice per organizzare progetti e task in colonne.</p>
+    <p>All data is kept in a single JSON file: put it in a synchronized folder (for example Nextcloud) to use the same board from several computers.</p>
+    <p xml:lang="it">Tutti i dati stanno in un unico file JSON: mettilo in una cartella sincronizzata (per esempio Nextcloud) per usare la stessa board da più computer.</p>
+  </description>
+
+  <!-- Discover only shows components that name their package: Zenith is not
+       in the distribution's AppStream catalog, so the name must be here -->
+  <pkgname>zenith</pkgname>
+
+  <launchable type="desktop-id">zenith.desktop</launchable>
+  <icon type="stock">zenith</icon>
+
+  <url type="homepage">https://github.com/alexis-82/zenith</url>
+  <url type="bugtracker">https://github.com/alexis-82/zenith/issues</url>
+  <url type="vcs-browser">https://github.com/alexis-82/zenith</url>
+
+  <provides>
+    <binary>zenith</binary>
+  </provides>
+
+  <content_rating type="oars-1.1"/>
+</component>
