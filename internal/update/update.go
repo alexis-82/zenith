@@ -186,6 +186,25 @@ func PickDeb(assets []Asset, goarch string) (Asset, error) {
 	return Asset{}, ErrNoAsset
 }
 
+// rpmArch maps Go architectures to the names rpm (and nfpm) use.
+var rpmArch = map[string]string{"amd64": "x86_64", "arm64": "aarch64"}
+
+// PickRpm returns the Fedora package for goarch, named by nfpm
+// "zenith-<version>-<release>.<rpmarch>.rpm".
+func PickRpm(assets []Asset, goarch string) (Asset, error) {
+	arch, ok := rpmArch[goarch]
+	if !ok {
+		return Asset{}, ErrNoAsset
+	}
+	for _, a := range assets {
+		name := strings.ToLower(a.Name)
+		if strings.HasPrefix(name, "zenith-") && strings.HasSuffix(name, "."+arch+".rpm") {
+			return a, nil
+		}
+	}
+	return Asset{}, ErrNoAsset
+}
+
 // Download saves the asset in a new private temporary directory and verifies
 // its size and, when known, its SHA-256. progress may be nil.
 func (c *Checker) Download(ctx context.Context, a Asset, progress func(done, total int64)) (string, error) {

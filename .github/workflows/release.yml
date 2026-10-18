@@ -98,19 +98,43 @@ jobs:
         run: |
           go install github.com/wailsapp/wails/v2/cmd/wails@v2.16.0
           go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.48.0
-      - name: Build + pacchetti (.tar.gz e .deb)
+      - name: Build + pacchetti (.tar.gz, .deb e .rpm)
         run: |
           wails build -tags webkit2_41 -ldflags "-X main.version=${{ github.ref_name }}"
           sh build/linux/package.sh
           VERSION="${GITHUB_REF_NAME#v}" ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager deb --target build/bin/
           dpkg-deb --info build/bin/zenith_*_amd64.deb
           dpkg-deb --contents build/bin/zenith_*_amd64.deb
+          VERSION="${GITHUB_REF_NAME#v}" ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager rpm --target build/bin/
+      # Installa davvero l'.rpm: Fedora 40 è il minimo (glibc della build
+      # Ubuntu 24.04), l'ultima Fedora usa dnf5. Niente release se fallisce.
+      - name: Verifica .rpm su Fedora
+        run: |
+          for img in fedora:40 fedora:latest; do
+            echo "::group::$img"
+            docker run --rm -v "$PWD/build/bin:/pkg:ro" "$img" sh -euc '
+              rpm -qpi /pkg/zenith-*.rpm
+              rpm -qpR /pkg/zenith-*.rpm
+              rpm -qpl /pkg/zenith-*.rpm
+              rpm -qpi /pkg/zenith-*.rpm | grep -Eq "^License +: MIT$"
+              if rpm -qpR /pkg/zenith-*.rpm | grep -E "libgtk-3-0|libwebkit2gtk-4.1-0"; then
+                echo "dipendenze Debian nel pacchetto rpm" >&2; exit 1
+              fi
+              dnf install -y /pkg/zenith-*.rpm
+              test "$(rpm -qf --qf "%{NAME}" /usr/bin/zenith)" = zenith
+              if ldd /usr/bin/zenith 2>&1 | grep "not found"; then
+                echo "librerie mancanti per /usr/bin/zenith" >&2; exit 1
+              fi
+            '
+            echo "::endgroup::"
+          done
       - uses: actions/upload-artifact@v7
         with:
           name: linux
           path: |
             build/bin/zenith-linux-*.tar.gz
             build/bin/zenith_*.deb
+            build/bin/zenith-*.rpm
           if-no-files-found: error
 
   # 3. Raccoglie i file, calcola i checksum e pubblica la release

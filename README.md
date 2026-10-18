@@ -53,6 +53,23 @@ VERSION=1.2.0 ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager deb 
 
 La configurazione è in `build/linux/nfpm.yaml`; nelle release il pacchetto lo crea il workflow `release.yml`.
 
+### Linux: pacchetto .rpm (Fedora 40+)
+
+Dalla pagina delle release scarica `zenith-<versione>-1.x86_64.rpm` e installalo (dnf installa anche le dipendenze GTK/WebKitGTK):
+
+```sh
+sudo dnf install ./zenith-1.2.0-1.x86_64.rpm
+```
+
+Installa gli stessi file del `.deb` (`/usr/bin/zenith`, `/usr/bin/zenith-launch`, la voce di menu e l'icona). Per disinstallare: `sudo dnf remove zenith` (il file dati JSON e `~/.config/Zenith` restano intatti). Serve Fedora 40 o successiva: il programma è compilato su Ubuntu 24.04 e richiede la stessa glibc o più recente.
+
+Per creare il pacchetto a mano serve nfpm, come per il `.deb`:
+
+```sh
+wails build -tags webkit2_41 -ldflags "-X main.version=v1.2.0"
+VERSION=1.2.0 ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager rpm --target build/bin/
+```
+
 ### Linux: installazione con script (altre distribuzioni)
 
 Dalla root del progetto, dopo la build:
@@ -86,8 +103,9 @@ Zenith confronta la propria versione con l'ultima release di <https://github.com
 
 - **Windows**: scarica il file `*-installer.exe` della release, lo verifica, salva i dati, avvia il setup e si chiude;
 - **Linux**, installato con il `.deb`: scarica `zenith_<versione>_<arch>.deb`, lo verifica e lo installa con `pkexec apt-get install` (richiesta password), poi riavvia Zenith;
+- **Linux**, installato con il `.rpm`: scarica `zenith-<versione>-1.<arch>.rpm`, lo verifica e lo installa con `pkexec dnf install` (richiesta password), poi riavvia Zenith;
 - **Linux**, installato con `install.sh`: scarica `zenith-linux-<arch>.tar.gz`, lo verifica e lo installa con `pkexec zenith-update.sh`, poi riavvia Zenith.
 
 Il download è accettato solo da `github.com/alexis-82/zenith/releases/download/…` e viene verificato per dimensione e, se GitHub lo fornisce, SHA-256. Offline o senza release l'app funziona normalmente.
 
-Su Linux l'aggiornamento si può fare anche a mano: `sudo apt install ./zenith_<versione>_amd64.deb` (pacchetto .deb), oppure `sudo zenith-update.sh` (scarica e installa l'ultima release) oppure `sudo zenith-update.sh zenith-linux-amd64.tar.gz`.
+Su Linux l'aggiornamento si può fare anche a mano: `sudo apt install ./zenith_<versione>_amd64.deb` (pacchetto .deb), `sudo dnf install ./zenith-<versione>-1.x86_64.rpm` (pacchetto .rpm), oppure `sudo zenith-update.sh` (scarica e installa l'ultima release) oppure `sudo zenith-update.sh zenith-linux-amd64.tar.gz`.

@@ -1,11 +1,13 @@
-# Debian package for Zenith, built with nfpm (https://nfpm.goreleaser.com).
+# Debian and Fedora packages for Zenith, built with nfpm (https://nfpm.goreleaser.com).
 # From the project root, after the Linux build:
 #
 #   wails build -tags webkit2_41 -ldflags "-X main.version=v1.2.0"
 #   VERSION=1.2.0 ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager deb --target build/bin/
+#   VERSION=1.2.0 ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager rpm --target build/bin/
 #
-# Output: build/bin/zenith_1.2.0_amd64.deb (the name Zenith's updater looks for).
-# Install: sudo apt install ./zenith_1.2.0_amd64.deb    Remove: sudo apt remove zenith
+# Output (the names Zenith's updater looks for):
+#   build/bin/zenith_1.2.0_amd64.deb     sudo apt install ./zenith_1.2.0_amd64.deb      Remove: sudo apt remove zenith
+#   build/bin/zenith-1.2.0-1.x86_64.rpm  sudo dnf install ./zenith-1.2.0-1.x86_64.rpm   Remove: sudo dnf remove zenith
 
 name: zenith
 version: ${VERSION}          # X.Y.Z, without the "v" of the tag
@@ -15,6 +17,7 @@ section: utils
 priority: optional
 maintainer: alexis-82 <alessioabrugiati@gmail.com>
 homepage: https://github.com/alexis-82/zenith
+license: MIT
 description: |
   Kanban board personale.
   Progetti e task in un unico file JSON, da tenere in una cartella
@@ -24,6 +27,14 @@ description: |
 depends:
   - libgtk-3-0
   - libwebkit2gtk-4.1-0
+
+# Fedora names the same libraries differently (Fedora 40+: glibc of the
+# Ubuntu 24.04 build machine, webkit2gtk 4.1)
+overrides:
+  rpm:
+    depends:
+      - gtk3
+      - webkit2gtk4.1
 
 contents:
   - src: build/bin/zenith
