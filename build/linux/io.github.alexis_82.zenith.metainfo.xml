@@ -34,6 +34,12 @@
   <launchable type="desktop-id">zenith.desktop</launchable>
   <icon type="stock">zenith</icon>
 
+  <!-- Same as Categories= in zenith.desktop -->
+  <categories>
+    <category>Office</category>
+    <category>ProjectManagement</category>
+  </categories>
+
   <url type="homepage">https://github.com/alexis-82/zenith</url>
   <url type="bugtracker">https://github.com/alexis-82/zenith/issues</url>
   <url type="vcs-browser">https://github.com/alexis-82/zenith</url>
