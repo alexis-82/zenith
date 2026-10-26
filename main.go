@@ -6,6 +6,8 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+
+	"zenith/internal/config"
 )
 
 //go:embed all:frontend/dist
@@ -22,13 +24,24 @@ func main() {
 	// Create an instance of the app structure
 	app := NewApp()
 
+	// Restore the window size of the last session on this computer.
+	win := config.DefaultWindow()
+	if dir, err := config.Dir(); err == nil {
+		win = config.LoadWindow(dir)
+	}
+	startState := options.Normal
+	if win.Maximised {
+		startState = options.Maximised
+	}
+
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:     "Zenith",
-		Width:     1440,
-		Height:    860,
-		MinWidth:  900,
-		MinHeight: 600,
+		Title:            "Zenith",
+		Width:            win.Width,
+		Height:           win.Height,
+		MinWidth:         config.MinWindowWidth,
+		MinHeight:        config.MinWindowHeight,
+		WindowStartState: startState,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

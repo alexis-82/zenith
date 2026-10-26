@@ -40,13 +40,16 @@ type App struct {
 	allowQuit atomic.Bool
 	// emitEvent is replaceable in tests (the Wails runtime needs a real app).
 	emitEvent func(ctx context.Context, name string, data ...interface{})
-	updates   updater
+	// readWindow is replaceable in tests, like emitEvent; ok=false skips saving.
+	readWindow func(ctx context.Context) (w config.Window, ok bool)
+	updates    updater
 }
 
 func NewApp() *App {
 	return &App{
-		emitEvent: runtime.EventsEmit,
-		updates:   updater{checker: ghupdate.NewChecker(version), install: installUpdate, quit: runtime.Quit},
+		emitEvent:  runtime.EventsEmit,
+		readWindow: readWindow,
+		updates:    updater{checker: ghupdate.NewChecker(version), install: installUpdate, quit: runtime.Quit},
 	}
 }
 
@@ -80,11 +83,13 @@ func (a *App) startup(ctx context.Context) {
 // beforeClose returns true to prevent the window from closing.
 func (a *App) beforeClose(ctx context.Context) bool {
 	if a.allowQuit.Load() {
+		a.rememberWindow()
 		a.engine.Close()
 		return false
 	}
 	res, err := a.engine.PrepareClose()
 	if res == persist.CloseOK {
+		a.rememberWindow()
 		a.engine.Close()
 		return false
 	}
@@ -94,6 +99,38 @@ func (a *App) beforeClose(ctx context.Context) bool {
 	}
 	a.emit("app:close-blocked", map[string]any{"reason": res, "error": msg})
 	return true
+}
+
+// readWindow returns the current window geometry. A minimised window has no
+// meaningful size, and a maximised one only records the flag.
+func readWindow(ctx context.Context) (config.Window, bool) {
+	if runtime.WindowIsMinimised(ctx) {
+		return config.Window{}, false
+	}
+	if runtime.WindowIsMaximised(ctx) {
+		return config.Window{Maximised: true}, true
+	}
+	w, h := runtime.WindowGetSize(ctx)
+	return config.Window{Width: w, Height: h}, true
+}
+
+// rememberWindow stores the window geometry for the next launch on this
+// computer. A maximised window keeps the last normal size, so that
+// un-maximising it after the next launch restores that size. Failures are
+// ignored: the next launch simply uses the previous (or default) size.
+func (a *App) rememberWindow() {
+	if a.readWindow == nil || a.configDir == "" {
+		return
+	}
+	w, ok := a.readWindow(a.ctx)
+	if !ok {
+		return
+	}
+	if w.Maximised {
+		prev := config.LoadWindow(a.configDir)
+		w.Width, w.Height = prev.Width, prev.Height
+	}
+	_ = config.SaveWindow(a.configDir, w)
 }
 
 func (a *App) interval() time.Duration {

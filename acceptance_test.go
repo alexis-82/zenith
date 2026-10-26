@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"zenith/internal/config"
 	"zenith/internal/model"
 	"zenith/internal/store"
 )
@@ -28,6 +29,7 @@ type testApp struct {
 	*App
 	mu     sync.Mutex
 	events []event
+	window config.Window // what readWindow reports; zero = unavailable
 }
 
 func (ta *testApp) eventsNamed(name string) []map[string]any {
@@ -60,6 +62,11 @@ func startApp(t *testing.T, configHome string) *testApp {
 		defer ta.mu.Unlock()
 		m, _ := data[0].(map[string]any)
 		ta.events = append(ta.events, event{name, m})
+	}
+	ta.readWindow = func(context.Context) (config.Window, bool) {
+		ta.mu.Lock()
+		defer ta.mu.Unlock()
+		return ta.window, ta.window != config.Window{}
 	}
 	ta.startup(context.Background())
 	t.Cleanup(ta.engine.Close)
@@ -251,6 +258,54 @@ func TestAcceptance_SaveOnCloseFailureBlocksClose(t *testing.T) {
 	ev := a.eventsNamed("app:close-blocked")
 	if len(ev) != 1 || fmt.Sprint(ev[0]["reason"]) != "error" {
 		t.Fatalf("expected close-blocked error event, got %v", ev)
+	}
+}
+
+func TestAcceptance_WindowSizeRememberedPerComputer(t *testing.T) {
+	home := t.TempDir()
+	a := startApp(t, home)
+	dir, _ := config.Dir()
+
+	a.window = config.Window{Width: 1280, Height: 720}
+	if a.beforeClose(context.Background()) {
+		t.Fatal("close prevented")
+	}
+	if got := config.LoadWindow(dir); got != (config.Window{Width: 1280, Height: 720}) {
+		t.Fatalf("size not saved on close: %+v", got)
+	}
+
+	// Maximised: the flag is saved, the last normal size is kept.
+	a = startApp(t, home)
+	a.window = config.Window{Maximised: true}
+	a.beforeClose(context.Background())
+	if got := config.LoadWindow(dir); got != (config.Window{Width: 1280, Height: 720, Maximised: true}) {
+		t.Fatalf("maximised state not saved: %+v", got)
+	}
+
+	// Unavailable geometry (e.g. minimised): the previous file is untouched.
+	a = startApp(t, home)
+	a.beforeClose(context.Background())
+	if got := config.LoadWindow(dir); !got.Maximised || got.Width != 1280 {
+		t.Fatalf("geometry overwritten while unavailable: %+v", got)
+	}
+}
+
+func TestAcceptance_WindowSizeNotSavedWhenCloseBlocked(t *testing.T) {
+	a := startApp(t, t.TempDir())
+	p, b := newDataFile(t, a)
+	s := a.GetSettings()
+	s.AutosaveSeconds = 300
+	a.SaveSettings(s)
+	dir, _ := config.Dir()
+
+	update(t, a, withProject(b, "Bloccata"))
+	os.RemoveAll(filepath.Dir(p))
+	a.window = config.Window{Width: 1000, Height: 700}
+	if !a.beforeClose(context.Background()) {
+		t.Fatal("close allowed although save failed")
+	}
+	if _, err := os.Stat(filepath.Join(dir, "window.json")); !os.IsNotExist(err) {
+		t.Fatalf("window saved although the window stays open: %v", err)
 	}
 }
 
