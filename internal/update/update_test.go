@@ -238,3 +238,28 @@ func TestPickRpm(t *testing.T) {
 		t.Fatalf("other package: expected ErrNoAsset, got %v", err)
 	}
 }
+
+func TestPickPacman(t *testing.T) {
+	assets := []Asset{
+		{Name: "zenith-linux-amd64.tar.gz"},
+		{Name: "zenith_1.2.0_amd64.deb"},
+		{Name: "zenith-1.2.0-1.x86_64.rpm"},
+		{Name: "zenith-1.2.0-1-aarch64.pkg.tar.zst"},
+		{Name: "zenith-1.2.0-1-x86_64.pkg.tar.zst"},
+	}
+	if a, err := PickPacman(assets, "amd64"); err != nil || a.Name != "zenith-1.2.0-1-x86_64.pkg.tar.zst" {
+		t.Fatalf("amd64: %v %v", a, err)
+	}
+	if a, err := PickPacman(assets, "arm64"); err != nil || a.Name != "zenith-1.2.0-1-aarch64.pkg.tar.zst" {
+		t.Fatalf("arm64: %v %v", a, err)
+	}
+	if _, err := PickPacman(assets[:3], "amd64"); !errors.Is(err, ErrNoAsset) {
+		t.Fatalf("no Arch package (only tar.gz, deb and rpm): expected ErrNoAsset, got %v", err)
+	}
+	if _, err := PickPacman(assets, "riscv64"); !errors.Is(err, ErrNoAsset) {
+		t.Fatalf("unknown arch: expected ErrNoAsset, got %v", err)
+	}
+	if _, err := PickPacman([]Asset{{Name: "other-1.0.0-1-x86_64.pkg.tar.zst"}}, "amd64"); !errors.Is(err, ErrNoAsset) {
+		t.Fatalf("other package: expected ErrNoAsset, got %v", err)
+	}
+}

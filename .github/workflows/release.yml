@@ -106,7 +106,7 @@ jobs:
           sh build/linux/metainfo-release.sh build/linux/io.github.alexis_82.zenith.metainfo.xml "${GITHUB_REF_NAME#v}" "$(date -u +%F)"
           desktop-file-validate build/linux/zenith.desktop
           appstreamcli validate --no-net build/linux/io.github.alexis_82.zenith.metainfo.xml
-      - name: Build + pacchetti (.tar.gz, .deb e .rpm)
+      - name: Build + pacchetti (.tar.gz, .deb, .rpm e Arch Linux)
         run: |
           wails build -tags webkit2_41 -ldflags "-X main.version=${{ github.ref_name }}"
           sh build/linux/package.sh
@@ -114,6 +114,7 @@ jobs:
           dpkg-deb --info build/bin/zenith_*_amd64.deb
           dpkg-deb --contents build/bin/zenith_*_amd64.deb
           VERSION="${GITHUB_REF_NAME#v}" ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager rpm --target build/bin/
+          VERSION="${GITHUB_REF_NAME#v}" ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager archlinux --target build/bin/
       # Installa davvero l'.rpm: Fedora 40 è il minimo (glibc della build
       # Ubuntu 24.04), l'ultima Fedora usa dnf5. Niente release se fallisce.
       - name: Verifica .rpm su Fedora
@@ -146,6 +147,31 @@ jobs:
             '
             echo "::endgroup::"
           done
+      # Installa davvero il pacchetto Arch con pacman (dipendenze dai
+      # repository ufficiali). Niente release se fallisce.
+      - name: Verifica pacchetto Arch Linux
+        run: |
+          docker run --rm -e VERSION="${GITHUB_REF_NAME#v}" -v "$PWD/build/bin:/pkg:ro" archlinux:latest sh -euc '
+            P=$(ls /pkg/zenith-*-x86_64.pkg.tar.zst)
+            pacman -Qip "$P"
+            pacman -Qlp "$P"
+            pacman -Qip "$P" | grep -Eq "^Licen[sz]e[^:]*: *MIT$"
+            if pacman -Qip "$P" | grep -E "libgtk-3-0|libwebkit2gtk-4.1-0|webkit2gtk4.1"; then
+              echo "dipendenze Debian/Fedora nel pacchetto Arch" >&2; exit 1
+            fi
+            # La sandbox dei download di pacman non funziona in tutti i container
+            pacman -Syu --noconfirm --disable-sandbox
+            pacman -U --noconfirm --disable-sandbox "$P"
+            test "$(pacman -Qqo /usr/bin/zenith)" = zenith
+            pacman -Q zenith | grep -q "^zenith $VERSION-"
+            if ldd /usr/bin/zenith 2>&1 | grep "not found"; then
+              echo "librerie mancanti per /usr/bin/zenith" >&2; exit 1
+            fi
+            M=/usr/share/metainfo/io.github.alexis_82.zenith.metainfo.xml
+            grep -q "<release version=\"$VERSION\"" "$M"
+            test -f /usr/share/icons/hicolor/scalable/apps/zenith.svg
+            test -x /usr/bin/zenith-launch
+          '
       - uses: actions/upload-artifact@v7
         with:
           name: linux
@@ -153,6 +179,7 @@ jobs:
             build/bin/zenith-linux-*.tar.gz
             build/bin/zenith_*.deb
             build/bin/zenith-*.rpm
+            build/bin/zenith-*.pkg.tar.zst
           if-no-files-found: error
 
   # 3. Raccoglie i file, calcola i checksum e pubblica la release

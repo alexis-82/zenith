@@ -70,6 +70,23 @@ wails build -tags webkit2_41 -ldflags "-X main.version=v1.2.0"
 VERSION=1.2.0 ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager rpm --target build/bin/
 ```
 
+### Linux: pacchetto Arch Linux (Arch, Manjaro, EndeavourOS, CachyOS)
+
+Dalla pagina delle release scarica `zenith-<versione>-1-x86_64.pkg.tar.zst` e installalo (pacman installa anche le dipendenze `gtk3` e `webkit2gtk-4.1`):
+
+```sh
+sudo pacman -U ./zenith-1.2.0-1-x86_64.pkg.tar.zst
+```
+
+Installa gli stessi file del `.deb` e dell'`.rpm`. Per disinstallare: `sudo pacman -R zenith` (il file dati JSON e `~/.config/Zenith` restano intatti). Zenith si aggiorna da solo anche da questo pacchetto (vedi sotto).
+
+Per creare il pacchetto a mano serve nfpm, come per il `.deb`:
+
+```sh
+wails build -tags webkit2_41 -ldflags "-X main.version=v1.2.0"
+VERSION=1.2.0 ARCH=amd64 nfpm pkg --config build/linux/nfpm.yaml --packager archlinux --target build/bin/
+```
+
 ### Linux: installazione con script (altre distribuzioni)
 
 Dalla root del progetto, dopo la build:
@@ -104,8 +121,9 @@ Zenith confronta la propria versione con l'ultima release di <https://github.com
 - **Windows**: scarica il file `*-installer.exe` della release, lo verifica, salva i dati, avvia il setup e si chiude;
 - **Linux**, installato con il `.deb`: scarica `zenith_<versione>_<arch>.deb`, lo verifica e lo installa con `pkexec apt-get install` (richiesta password), poi riavvia Zenith;
 - **Linux**, installato con il `.rpm`: scarica `zenith-<versione>-1.<arch>.rpm`, lo verifica e lo installa con `pkexec dnf install` (richiesta password), poi riavvia Zenith;
+- **Linux**, installato con il pacchetto Arch: scarica `zenith-<versione>-1-<arch>.pkg.tar.zst`, lo verifica e lo installa con `pkexec pacman -U` (richiesta password), poi riavvia Zenith;
 - **Linux**, installato con `install.sh`: scarica `zenith-linux-<arch>.tar.gz`, lo verifica e lo installa con `pkexec zenith-update.sh`, poi riavvia Zenith.
 
 Il download è accettato solo da `github.com/alexis-82/zenith/releases/download/…` e viene verificato per dimensione e, se GitHub lo fornisce, SHA-256. Offline o senza release l'app funziona normalmente.
 
-Su Linux l'aggiornamento si può fare anche a mano: `sudo apt install ./zenith_<versione>_amd64.deb` (pacchetto .deb), `sudo dnf install ./zenith-<versione>-1.x86_64.rpm` (pacchetto .rpm), oppure `sudo zenith-update.sh` (scarica e installa l'ultima release) oppure `sudo zenith-update.sh zenith-linux-amd64.tar.gz`.
+Su Linux l'aggiornamento si può fare anche a mano: `sudo apt install ./zenith_<versione>_amd64.deb` (pacchetto .deb), `sudo dnf install ./zenith-<versione>-1.x86_64.rpm` (pacchetto .rpm), `sudo pacman -U ./zenith-<versione>-1-x86_64.pkg.tar.zst` (pacchetto Arch), oppure `sudo zenith-update.sh` (scarica e installa l'ultima release) oppure `sudo zenith-update.sh zenith-linux-amd64.tar.gz`.

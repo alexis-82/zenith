@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Arch Linux package (`zenith-<version>-1-x86_64.pkg.tar.zst`) attached to every release; pacman installs the GTK/WebKitGTK dependencies.
+- Automatic updates for Zenith installed from the Arch Linux package: the app downloads the new package, verifies it, installs it with pacman after asking for the password, and restarts.
+
 ## [1.4.0] - 2026-10-26
 
 ### Added
