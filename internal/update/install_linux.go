@@ -1,6 +1,6 @@
 //go:build linux
 
-package main
+package update
 
 import (
 	"errors"
@@ -11,8 +11,6 @@ import (
 	goruntime "runtime"
 	"strings"
 	"syscall"
-
-	ghupdate "zenith/internal/update"
 )
 
 // Zenith can be installed on Linux in four ways:
@@ -78,23 +76,23 @@ func runningExecutable() string {
 	return exe
 }
 
-// platformAsset picks the release file matching how Zenith was installed.
-func platformAsset(assets []ghupdate.Asset) (ghupdate.Asset, error) {
+// PlatformAsset picks the release file matching how Zenith was installed.
+func PlatformAsset(assets []Asset) (Asset, error) {
 	if installedFromDeb() {
-		return ghupdate.PickDeb(assets, goruntime.GOARCH)
+		return PickDeb(assets, goruntime.GOARCH)
 	}
 	if installedFromRpm() {
-		return ghupdate.PickRpm(assets, goruntime.GOARCH)
+		return PickRpm(assets, goruntime.GOARCH)
 	}
 	if installedFromPacman() {
-		return ghupdate.PickPacman(assets, goruntime.GOARCH)
+		return PickPacman(assets, goruntime.GOARCH)
 	}
-	return ghupdate.PickAsset(assets, "linux", goruntime.GOARCH)
+	return PickAsset(assets, "linux", goruntime.GOARCH)
 }
 
-// installUpdate installs the downloaded file through pkexec (graphical
+// Install installs the downloaded file through pkexec (graphical
 // password prompt) and starts the new version; the app quits right after.
-func installUpdate(path string) error {
+func Install(path string) error {
 	pkexec, err := exec.LookPath("pkexec")
 	if err != nil {
 		return errors.New("pkexec non disponibile: aggiorna a mano da terminale (vedi README)")

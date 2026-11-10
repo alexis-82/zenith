@@ -49,7 +49,7 @@ func NewApp() *App {
 	return &App{
 		emitEvent:  runtime.EventsEmit,
 		readWindow: readWindow,
-		updates:    updater{checker: ghupdate.NewChecker(version), install: installUpdate, quit: runtime.Quit},
+		updates:    updater{checker: ghupdate.NewChecker(version), install: ghupdate.Install, quit: runtime.Quit},
 	}
 }
 

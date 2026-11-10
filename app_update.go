@@ -55,7 +55,7 @@ func (a *App) CheckUpdate() (UpdateInfo, error) {
 	if newer, err := ghupdate.IsNewer(r.Version, version); err == nil {
 		info.Available = newer // false for "dev" builds
 	}
-	_, assetErr := platformAsset(r.Assets)
+	_, assetErr := ghupdate.PlatformAsset(r.Assets)
 	info.CanInstall = info.Available && assetErr == nil
 	return info, nil
 }
@@ -84,7 +84,7 @@ func (a *App) InstallUpdate() error {
 	if newer, err := ghupdate.IsNewer(r.Version, version); err != nil || !newer {
 		return errors.New("nessun aggiornamento da installare")
 	}
-	asset, err := platformAsset(r.Assets)
+	asset, err := ghupdate.PlatformAsset(r.Assets)
 	if err != nil {
 		return err
 	}
