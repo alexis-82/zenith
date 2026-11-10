@@ -4,6 +4,15 @@
     <meta charset="UTF-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Zenith</title>
+    <script>
+        // Theme before the first paint: with "dark" and "light" data-theme
+        // already comes from Go; with "system" it is worked out here, without
+        // waiting for the settings (lib/theme.ts takes over once they arrive).
+        if (!document.documentElement.dataset.theme) {
+            document.documentElement.dataset.theme =
+                matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+    </script>
 </head>
 <body>
 <div id="app"></div>

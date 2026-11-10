@@ -38,6 +38,7 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('../wailsjs/go/main/App', () => mocks.api)
 vi.mock('../wailsjs/runtime/runtime', () => ({
+  WindowSetBackgroundColour: () => {},
   EventsOn: (name: string, cb: (data: any) => void) => {
     mocks.handlers[name] = cb
     return () => {}

@@ -26,8 +26,10 @@ func main() {
 
 	// Restore the window size of the last session on this computer.
 	win := config.DefaultWindow()
+	theme := config.Defaults().Theme
 	if dir, err := config.Dir(); err == nil {
 		win = config.LoadWindow(dir)
+		theme = config.Load(dir).Theme
 	}
 	startState := options.Normal
 	if win.Maximised {
@@ -43,9 +45,10 @@ func main() {
 		MinHeight:        config.MinWindowHeight,
 		WindowStartState: startState,
 		AssetServer: &assetserver.Options{
-			Assets: assets,
+			Assets:     assets,
+			Middleware: app.themedIndex,
 		},
-		BackgroundColour: &options.RGBA{R: 246, G: 247, B: 249, A: 1},
+		BackgroundColour: windowBackground(theme),
 		OnStartup:        app.startup,
 		OnBeforeClose:    app.beforeClose,
 		Bind: []interface{}{
