@@ -4,9 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
-	"path/filepath"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -101,38 +98,6 @@ func (a *App) beforeClose(ctx context.Context) bool {
 	return true
 }
 
-// readWindow returns the current window geometry. A minimised window has no
-// meaningful size, and a maximised one only records the flag.
-func readWindow(ctx context.Context) (config.Window, bool) {
-	if runtime.WindowIsMinimised(ctx) {
-		return config.Window{}, false
-	}
-	if runtime.WindowIsMaximised(ctx) {
-		return config.Window{Maximised: true}, true
-	}
-	w, h := runtime.WindowGetSize(ctx)
-	return config.Window{Width: w, Height: h}, true
-}
-
-// rememberWindow stores the window geometry for the next launch on this
-// computer. A maximised window keeps the last normal size, so that
-// un-maximising it after the next launch restores that size. Failures are
-// ignored: the next launch simply uses the previous (or default) size.
-func (a *App) rememberWindow() {
-	if a.readWindow == nil || a.configDir == "" {
-		return
-	}
-	w, ok := a.readWindow(a.ctx)
-	if !ok {
-		return
-	}
-	if w.Maximised {
-		prev := config.LoadWindow(a.configDir)
-		w.Width, w.Height = prev.Width, prev.Height
-	}
-	_ = config.SaveWindow(a.configDir, w)
-}
-
 func (a *App) interval() time.Duration {
 	return time.Duration(a.settings.AutosaveSeconds) * time.Second
 }
@@ -165,130 +130,6 @@ func (a *App) Reload() (model.Board, error) {
 func (a *App) ResolveConflict(choice string) (*model.Board, error) {
 	b, err := a.engine.ResolveConflict(choice)
 	return b, coded(err)
-}
-
-func (a *App) GetSettings() config.Settings {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	return a.settings
-}
-
-// SaveSettings updates autosave interval and theme (the data path changes
-// only through SetDataPath / CreateNewFile).
-func (a *App) SaveSettings(s config.Settings) (config.Settings, error) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	s.DataPath = a.settings.DataPath
-	s = s.Normalize()
-	if err := a.persistSettings(s); err != nil {
-		return a.settings, err
-	}
-	a.engine.SetInterval(a.interval())
-	return a.settings, nil
-}
-
-func (a *App) SetDataPath(p string, confirmWrite bool) (InitState, error) {
-	p, err := cleanPath(p)
-	if err != nil {
-		return InitState{}, err
-	}
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	b, err := a.engine.SetDataPath(p, confirmWrite)
-	if err != nil {
-		return InitState{}, coded(err)
-	}
-	return a.activated(p, b)
-}
-
-func (a *App) CreateNewFile(p string) (InitState, error) {
-	p, err := cleanPath(p)
-	if err != nil {
-		return InitState{}, err
-	}
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	b, err := a.engine.CreateNewFile(p)
-	if err != nil {
-		return InitState{}, coded(err)
-	}
-	return a.activated(p, b)
-}
-
-// cleanPath requires an absolute path: a relative one would be resolved
-// against the process working directory, which changes between launches.
-func cleanPath(p string) (string, error) {
-	p = strings.TrimSpace(p)
-	if p == "" {
-		return "", errors.New("percorso vuoto")
-	}
-	if !filepath.IsAbs(p) {
-		return "", errors.New("indica il percorso completo del file, non un percorso relativo")
-	}
-	return filepath.Clean(p), nil
-}
-
-// activated must be called with a.mu held.
-func (a *App) activated(p string, b model.Board) (InitState, error) {
-	a.loadError = ""
-	s := a.settings
-	s.DataPath = p
-	if err := a.persistSettings(s); err != nil {
-		return a.state(&b), fmt.Errorf("file attivato, ma impossibile salvare le impostazioni: %w", err)
-	}
-	return a.state(&b), nil
-}
-
-func (a *App) persistSettings(s config.Settings) error {
-	if a.configDir == "" {
-		return errors.New("cartella di configurazione non disponibile")
-	}
-	if err := config.Save(a.configDir, s); err != nil {
-		return err
-	}
-	a.settings = s
-	return nil
-}
-
-var jsonFilter = []runtime.FileFilter{{DisplayName: "File JSON (*.json)", Pattern: "*.json"}}
-
-func (a *App) PickExistingFile() (string, error) {
-	return runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
-		Title:   "Scegli il file dati di Zenith",
-		Filters: jsonFilter,
-	})
-}
-
-func (a *App) PickNewFile() (string, error) {
-	return runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
-		Title:           "Crea un nuovo file dati",
-		DefaultFilename: "zenith.json",
-		Filters:         jsonFilter,
-	})
-}
-
-// OpenURL opens a Markdown link in the system browser; only http, https and
-// mailto are allowed.
-func (a *App) OpenURL(u string) error {
-	if !isSafeURL(u) {
-		return fmt.Errorf("link non consentito: %s", u)
-	}
-	runtime.BrowserOpenURL(a.ctx, u)
-	return nil
-}
-
-func isSafeURL(u string) bool {
-	parsed, err := url.Parse(strings.TrimSpace(u))
-	if err != nil {
-		return false
-	}
-	switch strings.ToLower(parsed.Scheme) {
-	case "http", "https":
-		return parsed.Host != ""
-	case "mailto":
-		return true
-	}
-	return false
 }
 
 // Quit closes the app. force=true exits without saving; otherwise pending

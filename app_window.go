@@ -2,13 +2,48 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
+	"zenith/internal/config"
 	"zenith/internal/systheme"
 )
+
+// readWindow returns the current window geometry. A minimised window has no
+// meaningful size, and a maximised one only records the flag.
+func readWindow(ctx context.Context) (config.Window, bool) {
+	if runtime.WindowIsMinimised(ctx) {
+		return config.Window{}, false
+	}
+	if runtime.WindowIsMaximised(ctx) {
+		return config.Window{Maximised: true}, true
+	}
+	w, h := runtime.WindowGetSize(ctx)
+	return config.Window{Width: w, Height: h}, true
+}
+
+// rememberWindow stores the window geometry for the next launch on this
+// computer. A maximised window keeps the last normal size, so that
+// un-maximising it after the next launch restores that size. Failures are
+// ignored: the next launch simply uses the previous (or default) size.
+func (a *App) rememberWindow() {
+	if a.readWindow == nil || a.configDir == "" {
+		return
+	}
+	w, ok := a.readWindow(a.ctx)
+	if !ok {
+		return
+	}
+	if w.Maximised {
+		prev := config.LoadWindow(a.configDir)
+		w.Width, w.Height = prev.Width, prev.Height
+	}
+	_ = config.SaveWindow(a.configDir, w)
+}
 
 // Colours of --bg in frontend/src/style.css. The window shows them before
 // the page paints, so they must match or a flash of the wrong colour shows
